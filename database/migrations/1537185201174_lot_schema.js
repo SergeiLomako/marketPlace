@@ -6,7 +6,8 @@ class LotSchema extends Schema {
   up () {
     this.create('lots', (table) => {
       table.increments()
-      table.integer('userId').unsigned().references('id').inTable('users')
+      table.integer('user_id').unsigned().notNullable()
+      table.foreign('user_id').references('id').inTable('users').onDelete('RESTRICT')
       table.string('status').notNullable()
       table.string('title').notNullable()
       table.string('image').notNullable()

@@ -6,7 +6,8 @@ class OrderSchema extends Schema {
   up () {
     this.create('orders', (table) => {
       table.increments()
-      table.integer('bidId').unsigned().references('id').inTable('bids')
+      table.integer('bid_id').unsigned().notNullable()
+      table.foreign('bid_id').references('id').inTable('bids').onDelete('CASCADE')
       table.string('status').notNullable()
       table.string('type').notNullable()
       table.string('arrivalLocation').notNullable()

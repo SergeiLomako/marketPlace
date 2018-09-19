@@ -1,5 +1,6 @@
 'use strict'
 
+// eslint-disable-next-line no-undef
 const Schema = use('Schema')
 
 class UserSchema extends Schema {
@@ -11,7 +12,10 @@ class UserSchema extends Schema {
       table.string('firstname', 20).notNullable()
       table.string('lastname', 20).notNullable()
       table.string('password', 60).notNullable()
-      table.timestamp('dob').notNullable()
+      table.string('confirmationToken', 40)
+      table.string('restorePasswordToken', 40)
+      table.boolean('confirmed').defaultTo(false)
+      table.date('dob').notNullable()
       table.timestamps()
     })
   }
