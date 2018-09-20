@@ -36,18 +36,27 @@ class AuthController {
       await user.save()
 
       response.json({ message: 'Your account is activated!' })
-    } catch (err) {
-      response.status(404).json({ message: err.message })
+    } catch ({ message }) {
+      response.status(404).json({ message })
     }
   }
 
   async login ({ request, auth, response }) {
     try {
       const { email, password } = request.all()
+      const user = await User.findBy('email', email)
+      if (user && user.confirmed === false) {
+        throw new Error('Account not confirmed')
+      }
       const { token } = await auth.attempt(email, password)
-      response.json({ token })
-    } catch (err) {
-      response.status(400).json({ message: 'Bad credentials given' })
+      response.header('Authorization', token)
+      response.json({ message: 'Login OK' })
+    } catch ({ name, message }) {
+      if (name === 'Error') {
+        response.status(403).json({ message })
+      } else {
+        response.status(400).json({ message: 'Bad credentials given' })
+      }
     }
   }
 
@@ -59,8 +68,8 @@ class AuthController {
       }
 
       response.json({ message: 'Imagine that here the form of changing the password' })
-    } catch (err) {
-      response.status(404).json({ message: err.message })
+    } catch ({ message }) {
+      response.status(404).json({ message })
     }
   }
 
@@ -71,15 +80,15 @@ class AuthController {
         throw new Error('User not found')
       }
       const restoreToken = randomString({ length: 40 })
-      const url = Env.get('APP_URL') + Route.url('restoreEmail', { token: restoreToken })
+      const url = `${Env.get('APP_URL')}${Route.url('restoreEmail', { token: restoreToken })}`
       user.restorePasswordToken = restoreToken
       await user.save()
 
       Event.fire('restore::password', { user, url })
 
       response.json({ message: 'Check your email!' })
-    } catch (err) {
-      response.status(404).json({ message: err.message })
+    } catch ({ message }) {
+      response.status(404).json({ message })
     }
   }
 
@@ -91,10 +100,10 @@ class AuthController {
       }
       user.restorePasswordToken = null
       user.password = request.input('password')
-      user.save()
+      await user.save()
       response.json({ message: 'Password successfully changed' })
-    } catch (err) {
-      response.status(404).json({ message: err.message })
+    } catch ({ message }) {
+      response.status(404).json({ message })
     }
   }
 }
