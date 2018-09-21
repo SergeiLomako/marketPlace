@@ -92,7 +92,7 @@ class AuthController {
     }
   }
 
-  async saveNewPassword ({ request, response }) {
+  async saveNewPassword ({ request, response, auth }) {
     try {
       const user = await User.findBy('restorePasswordToken', request.input('token'))
       if (!user) {
@@ -101,6 +101,8 @@ class AuthController {
       user.restorePasswordToken = null
       user.password = request.input('password')
       await user.save()
+      const { token } = await auth.attempt(user.email, request.input('password'))
+      response.header('Authorization', token)
       response.json({ message: 'Password successfully changed' })
     } catch ({ message }) {
       response.status(404).json({ message })

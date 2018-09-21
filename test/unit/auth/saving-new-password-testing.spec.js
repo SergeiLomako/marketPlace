@@ -46,6 +46,7 @@ test('check saving new password (success)', async ({ assert, client }) => {
 
   assert.isNotNull(user)
   assert.isNull(user.restorePasswordToken)
+  response.assertHeader('authorization', response.headers.authorization)
   response.assertStatus(200)
   response.assertJSON({ message: 'Password successfully changed' })
 })
