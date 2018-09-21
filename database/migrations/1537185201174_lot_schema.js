@@ -8,7 +8,7 @@ class LotSchema extends Schema {
       table.increments()
       table.integer('user_id').unsigned().notNullable()
       table.foreign('user_id').references('id').inTable('users').onDelete('RESTRICT')
-      table.string('status').notNullable()
+      table.string('status').defaultTo('pending')
       table.string('title').notNullable()
       table.string('image').notNullable()
       table.text('description').notNullable()

@@ -56,8 +56,13 @@ test('check validator register (fail)', async ({ assert }) => {
     },
     {
       field: 'dob',
-      message: 'Date of birth must be correct date',
+      message: 'Dob must be correct date',
       validation: 'date'
+    },
+    {
+      field: 'dob',
+      message: 'You must be over 21 years old',
+      validation: 'beforeOffsetOf'
     }
   ])
 })
@@ -69,7 +74,7 @@ test('check validator register (success)', async ({ assert }) => {
     firstname: 'John',
     lastname: 'Doe',
     password: 'qwerty',
-    dob: '2018-02-20'
+    dob: '1980-02-20'
   }
 
   const validation = await validateAll(correctData, StoreUserValidator.rules, StoreUserValidator.messages)
@@ -118,23 +123,21 @@ test('check validator changePassword (fail)', async ({ assert }) => {
   const validation = await validateAll(fakeData, ChangePasswordValidator.rules, ChangePasswordValidator.messages)
 
   assert.isTrue(validation.fails())
-  assert.deepEqual(validation.messages(), [
-    {
-      field: 'password',
-      message: 'Password must be at least 6 characters',
-      validation: 'min'
-    },
-    {
-      field: 'password',
-      message: 'Passwords not match',
-      validation: 'confirmed'
-    },
-    {
-      field: 'token',
-      message: 'Token is required',
-      validation: 'required'
-    }
-  ])
+  assert.deepEqual(validation.messages(), [{
+    field: 'password',
+    message: 'Password must be at least 6 characters',
+    validation: 'min'
+  },
+  {
+    field: 'password',
+    message: 'Passwords do not match',
+    validation: 'confirmed'
+  },
+  {
+    field: 'token',
+    message: 'Token is required',
+    validation: 'required'
+  }])
 })
 
 test('check validator changePassword (success)', async ({ assert }) => {
@@ -159,11 +162,7 @@ test('check login (fail (bad credentials))', async ({ client }) => {
     .end()
 
   response.assertStatus(400)
-  response.assertError(
-    {
-      message: 'Bad credentials given'
-    }
-  )
+  response.assertError({ message: 'Bad credentials given' })
 })
 
 test('check login (fail (not confirmed))', async ({ client }) => {
@@ -186,11 +185,7 @@ test('check login (fail (not confirmed))', async ({ client }) => {
     .end()
 
   response.assertStatus(403)
-  response.assertJSON(
-    {
-      message: 'Account not confirmed'
-    }
-  )
+  response.assertJSON({ message: 'Account not confirmed' })
 })
 
 test('check login (success)', async ({ client }) => {
@@ -215,11 +210,7 @@ test('check login (success)', async ({ client }) => {
 
   response.assertStatus(200)
   response.assertHeader('authorization', response.headers.authorization)
-  response.assertJSON(
-    {
-      message: 'Login OK'
-    }
-  )
+  response.assertJSON({ message: 'Login OK' })
 })
 
 test('check register', async ({ assert, client }) => {
@@ -233,17 +224,13 @@ test('check register', async ({ assert, client }) => {
       phone: '777777777777',
       firstname: 'John',
       lastname: 'Doe',
-      dob: '2018-01-01',
+      dob: '1980-01-01',
       confirmationToken: 'sdfdsfjkjskflksdfsd'
     })
     .end()
 
   response.assertStatus(201)
-  response.assertJSON(
-    {
-      message: 'User created'
-    }
-  )
+  response.assertJSON({ message: 'User created' })
 
   const recentEvent = Event.pullRecent()
   assert.equal(recentEvent.event, 'new::user')
@@ -257,11 +244,7 @@ test('check confirm email (fail)', async ({ assert, client }) => {
     .end()
 
   response.assertStatus(404)
-  response.assertJSON(
-    {
-      message: 'User not found'
-    }
-  )
+  response.assertJSON({ message: 'User not found' })
 })
 
 test('check confirm email (success)', async ({ assert, client }) => {
@@ -273,7 +256,7 @@ test('check confirm email (success)', async ({ assert, client }) => {
     firstname: 'John',
     lastname: 'Doe',
     password: 'qwerty',
-    dob: '2018-10-21',
+    dob: '1980-10-21',
     confirmationToken: token
   })
 
@@ -286,11 +269,7 @@ test('check confirm email (success)', async ({ assert, client }) => {
   assert.isTrue(confirmedUser.confirmed)
   assert.isNull(confirmedUser.confirmationToken)
   response.assertStatus(200)
-  response.assertJSON(
-    {
-      message: 'Your account is activated!'
-    }
-  )
+  response.assertJSON({ message: 'Your account is activated!' })
 })
 
 test('check showing restore password email form (fail)', async ({ client }) => {
@@ -311,11 +290,7 @@ test('check showing restore password email form (fail)', async ({ client }) => {
     .end()
 
   response.assertStatus(200)
-  response.assertJSON(
-    {
-      message: 'Imagine that here the form of changing the password'
-    }
-  )
+  response.assertJSON({ message: 'Imagine that here the form of changing the password' })
 })
 
 test('check showing restore password email form (success)', async ({ client }) => {
@@ -338,11 +313,7 @@ test('check showing restore password email form (success)', async ({ client }) =
     .end()
 
   response.assertStatus(200)
-  response.assertJSON(
-    {
-      message: 'Check your email!'
-    }
-  )
+  response.assertJSON({ message: 'Check your email!' })
 })
 
 test('check sending restore password email (fail)', async ({ client }) => {
@@ -354,11 +325,7 @@ test('check sending restore password email (fail)', async ({ client }) => {
     .end()
 
   response.assertStatus(404)
-  response.assertJSON(
-    {
-      message: 'User not found'
-    }
-  )
+  response.assertJSON({ message: 'User not found' })
 })
 
 test('check sending restore password email (success)', async ({ assert, client }) => {
@@ -383,11 +350,7 @@ test('check sending restore password email (success)', async ({ assert, client }
     .end()
 
   response.assertStatus(200)
-  response.assertJSON(
-    {
-      message: 'Check your email!'
-    }
-  )
+  response.assertJSON({ message: 'Check your email!' })
 
   const recentEvent = Event.pullRecent()
   assert.equal(recentEvent.event, 'restore::password')
@@ -406,11 +369,7 @@ test('check saving new password (fail)', async ({ client }) => {
     .end()
 
   response.assertStatus(404)
-  response.assertJSON(
-    {
-      message: 'User not found'
-    }
-  )
+  response.assertJSON({ message: 'User not found' })
 })
 
 test('check saving new password (success)', async ({ assert, client }) => {
@@ -440,9 +399,5 @@ test('check saving new password (success)', async ({ assert, client }) => {
   assert.isNotNull(user)
   assert.isNull(user.restorePasswordToken)
   response.assertStatus(200)
-  response.assertJSON(
-    {
-      message: 'Password successfully changed'
-    }
-  )
+  response.assertJSON({ message: 'Password successfully changed' })
 })

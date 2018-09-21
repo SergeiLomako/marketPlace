@@ -1,25 +1,22 @@
 'use strict'
 
+const rules = {
+  password: 'required|min:6|max:30|confirmed',
+  token: 'required'
+}
+const messages = use('App/Helpers/validation')(rules)
+
 class changePassword {
   get validateAll () {
     return true
   }
 
   get rules () {
-    return {
-      password: 'required|min:6|max:30|confirmed',
-      token: 'required'
-    }
+    return rules
   }
 
   get messages () {
-    return {
-      'password.required': 'Password is required',
-      'password.confirmed': 'Passwords not match',
-      'password.min': 'Password must be at least 6 characters',
-      'password.max': 'Password must be no more than 30 characters',
-      'token.required': 'Token is required'
-    }
+    return messages
   }
 }
 

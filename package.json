@@ -1,18 +1,17 @@
 {
-  "name": "adonis-api-app",
-  "version": "4.1.0",
+  "name": "marketplace",
+  "version": "1.0.0",
   "adonis-version": "4.1.0",
-  "description": "Adonisjs boilerplate for API server with pre-configured JWT",
+  "description": "Marketplace is a test project, which is based on AdonisJS",
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
     "test": "standard --fix && node ace test"
   },
   "keywords": [
-    "adonisjs",
-    "adonis-app"
+    "marketplace"
   ],
-  "author": "",
+  "author": "SergeiLomako",
   "private": true,
   "dependencies": {
     "@adonisjs/ace": "^5.0.2",

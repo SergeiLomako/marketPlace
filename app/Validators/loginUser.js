@@ -1,5 +1,11 @@
 'use strict'
 
+const rules = {
+  email: 'required|email',
+  password: 'required'
+}
+const messages = use('App/Helpers/validation')(rules)
+
 class loginUser {
   get validateAll () {
     return true
@@ -13,18 +19,11 @@ class loginUser {
   }
 
   get rules () {
-    return {
-      email: 'required|email',
-      password: 'required'
-    }
+    return rules
   }
 
   get messages () {
-    return {
-      'email.required': 'Email is required',
-      'email.email': 'Email must be correct email address',
-      'password.required': 'Password is required'
-    }
+    return messages
   }
 }
 
