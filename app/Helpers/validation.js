@@ -6,6 +6,10 @@ const messages = {
   min: '{field} must be at least {value} characters',
   max: '{field} must be no more than {value} characters',
   date: '{field} must be correct date',
+  dateFormat: '{field} must be date format: {value}',
+  after: '{field} must be later than {value}',
+  in: '{field} must match one value from the list: {value}',
+  above: '{field} must be greater than {value}',
   before_offset_of: 'You must be over {value} years old',
   confirmed: '{field}s do not match',
   number: '{field} must be number'
@@ -20,7 +24,11 @@ function generateMessage (field, rule) {
   const attributes = rule.split(':')
   if (attributes.length > 1) {
     message.key = `${field}.${attributes[0]}`
-    message.title = messages[attributes[0]].replace('{field}', ucFirst(field)).replace('{value}', attributes[1].split(',')[0])
+    if (attributes[0] === 'in') {
+      message.title = messages[attributes[0]].replace('{field}', ucFirst(field)).replace('{value}', attributes[1])
+    } else {
+      message.title = messages[attributes[0]].replace('{field}', ucFirst(field)).replace('{value}', attributes[1].split(',')[0])
+    }
   } else {
     message.key = `${field}.${rule}`
     message.title = messages[rule].replace('{field}', ucFirst(field))

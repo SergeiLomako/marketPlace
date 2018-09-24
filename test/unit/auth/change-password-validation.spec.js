@@ -4,11 +4,10 @@ const { validateAll } = use('Validator')
 const { test } = use('Test/Suite')('Change password validation')
 const ChangePassword = use('App/Validators/changePassword')
 const ChangePasswordValidator = new ChangePassword()
-let fakeData
-let correctData
+const generateMessage = use('App/Helpers/validation').generateMessage
 
 test('check validator changePassword (fail)', async ({ assert }) => {
-  fakeData = {
+  const fakeData = {
     password: '123'
   }
 
@@ -17,23 +16,23 @@ test('check validator changePassword (fail)', async ({ assert }) => {
   assert.isTrue(validation.fails())
   assert.deepEqual(validation.messages(), [{
     field: 'password',
-    message: 'Password must be at least 6 characters',
+    message: generateMessage('password', 'min:6').title,
     validation: 'min'
   },
   {
     field: 'password',
-    message: 'Passwords do not match',
+    message: generateMessage('password', 'confirmed').title,
     validation: 'confirmed'
   },
   {
     field: 'token',
-    message: 'Token is required',
+    message: generateMessage('token', 'required').title,
     validation: 'required'
   }])
 })
 
 test('check validator changePassword (success)', async ({ assert }) => {
-  correctData = {
+  const correctData = {
     password: 'qwerty',
     password_confirmation: 'qwerty',
     token: 'randomString'

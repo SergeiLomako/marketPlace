@@ -4,11 +4,10 @@ const { validateAll } = use('Validator')
 const { test } = use('Test/Suite')('Login validation')
 const LoginUser = use('App/Validators/loginUser')
 const LoginUserValidator = new LoginUser()
-let fakeData
-let correctData
+const generateMessage = use('App/Helpers/validation').generateMessage
 
 test('check validator login (fail)', async ({ assert }) => {
-  fakeData = {
+  const fakeData = {
     email: 'fake email'
   }
 
@@ -18,19 +17,19 @@ test('check validator login (fail)', async ({ assert }) => {
   assert.deepEqual(validation.messages(), [
     {
       field: 'email',
-      message: 'Email must be correct email address',
+      message: generateMessage('email', 'email').title,
       validation: 'email'
     },
     {
       field: 'password',
-      message: 'Password is required',
+      message: generateMessage('password', 'required').title,
       validation: 'required'
     }
   ])
 })
 
 test('check validator login (success)', async ({ assert }) => {
-  correctData = {
+  const correctData = {
     email: 'johndoe@testhosting.com',
     password: 'qwerty'
   }

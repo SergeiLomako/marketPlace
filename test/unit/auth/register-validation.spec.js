@@ -5,11 +5,10 @@ const { validateAll } = use('Validator')
 const { test } = use('Test/Suite')('Register validation')
 const StoreUser = use('App/Validators/storeUser')
 const StoreUserValidator = new StoreUser()
-let fakeData
-let correctData
+const generateMessage = use('App/Helpers/validation').generateMessage
 
 test('check validator register (fail)', async ({ assert }) => {
-  fakeData = {
+  const fakeData = {
     email: 'fake email',
     phone: 4564564565464554545454544544545,
     firstname: 'i',
@@ -23,44 +22,44 @@ test('check validator register (fail)', async ({ assert }) => {
   assert.deepEqual(validation.messages(), [
     {
       field: 'email',
-      message: 'Email must be correct email address',
+      message: generateMessage('email', 'email').title,
       validation: 'email'
     },
     {
       field: 'phone',
-      message: 'Phone must be no more than 20 characters',
+      message: generateMessage('phone', 'max:20').title,
       validation: 'max'
     },
     {
       field: 'firstname',
-      message: 'Firstname must be at least 2 characters',
+      message: generateMessage('firstname', 'min:2').title,
       validation: 'min'
     },
     {
       field: 'lastname',
-      message: 'Lastname is required',
+      message: generateMessage('lastname', 'required').title,
       validation: 'required'
     },
     {
       field: 'password',
-      message: 'Password must be at least 6 characters',
+      message: generateMessage('password', 'min:6').title,
       validation: 'min'
     },
     {
       field: 'dob',
-      message: 'Dob must be correct date',
+      message: generateMessage('dob', 'date').title,
       validation: 'date'
     },
     {
       field: 'dob',
-      message: 'You must be over 21 years old',
+      message: generateMessage('dob', 'before_offset_of:21').title,
       validation: 'beforeOffsetOf'
     }
   ])
 })
 
 test('check validator register (success)', async ({ assert }) => {
-  correctData = {
+  const correctData = {
     email: 'johndoe@testhosting.com',
     phone: '06606060707',
     firstname: 'John',
