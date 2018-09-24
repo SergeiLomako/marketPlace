@@ -49,7 +49,7 @@ class AuthController {
         throw new Error('Account not confirmed')
       }
       const { token } = await auth.attempt(email, password)
-      response.header('Authorization', token)
+      response.header('Authorization', `Bearer ${token}`)
       response.json({ message: 'Login OK' })
     } catch ({ name, message }) {
       if (name === 'Error') {
@@ -114,7 +114,7 @@ class AuthController {
       await auth.check()
       response.json({ status: true })
     } catch (error) {
-      response.json({ status: false })
+      response.status(401).json({ status: false })
     }
   }
 }
