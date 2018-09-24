@@ -108,6 +108,15 @@ class AuthController {
       response.status(404).json({ message })
     }
   }
+
+  async checkAuth ({ response, auth }) {
+    try {
+      await auth.check()
+      response.json({ status: true })
+    } catch (error) {
+      response.json({ status: false })
+    }
+  }
 }
 
 module.exports = AuthController
