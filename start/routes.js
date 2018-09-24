@@ -24,6 +24,8 @@ Route.post('/register', 'AuthController.register')
 
 Route.get('/register/confirm/:token', 'AuthController.confirmEmail').as('confirm')
 
+Route.get('/checkAuth', 'AuthController.checkAuth')
+
 Route.post('/login', 'AuthController.login')
   .validator('loginUser')
 
@@ -36,3 +38,24 @@ Route.get('/restorePasswordForm/:token', 'AuthController.showRestorePasswordForm
 
 Route.put('/saveNewPassword', 'AuthController.saveNewPassword')
   .validator('changePassword')
+
+Route
+  .group(() => {
+    Route.get('/', 'LotController.index')
+
+    Route.get('/:id', 'LotController.show')
+
+    Route.post('/', 'LotController.store')
+      .validator('CreateLot')
+
+    Route.put('/:id', 'LotController.update')
+      .validator('UpdateLot')
+      .middleware(['checkStatus'])
+
+    Route.put('/:id/changePrice', 'LotController.changePrice')
+      .middleware(['changePrice'])
+
+    Route.delete('/:id', 'LotController.destroy')
+  })
+  .prefix('lots')
+  .middleware(['auth'])
