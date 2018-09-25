@@ -1,11 +1,13 @@
 'use strict'
 
 const Lot = use('App/Models/Lot')
+const Env = use('Env')
 const { validateAll, sanitize } = use('Validator')
 const Moment = use('moment')
 const Messages = use('App/Helpers/validation')
 const Helpers = use('Helpers')
-const removeFile = Helpers.promisify(require('fs').unlink)
+const { upload, unlink } = use('App/Helpers/files')
+const imagePath = Helpers.publicPath(Env.get('IMAGE_FOLDER'))
 
 class LotController {
   async index ({ request, auth, response }) {
@@ -20,12 +22,14 @@ class LotController {
   async store ({ request, response, auth }) {
     try {
       const data = request.all()
-      console.log(data)
+      if (request._files.image !== undefined) {
+        data.image = await upload(request, 'image', imagePath, data.title)
+      }
       data['user_id'] = auth.user.id
       await Lot.create(data)
       response.status(201).json({ message: 'Lot created' })
-    } catch (err) {
-      response.status(500).json({ message: 'Database error. Try again later' })
+    } catch ({ message }) {
+      response.status(500).json({ message: message })
     }
   }
 
@@ -44,7 +48,6 @@ class LotController {
     const sanitizeRules = {
       title: 'strip_tags|trim',
       description: 'strip_tags|trim',
-      image: 'strip_tags|trim',
       currentPrice: 'to_int',
       estimatedPrice: 'to_int'
     }
@@ -61,10 +64,16 @@ class LotController {
     const data = sanitize(requestData, sanitizeRules)
     const price = request.input('currentPrice') || currentLot.currentPrice
     const time = request.input('startTime') || currentLot.startTime
+    if (request._files.image !== undefined) {
+      const title = data.title || currentLot.title
+      if (currentLot.image) {
+        unlink(`${imagePath}/${currentLot.image}`)
+      }
+      data.image = await upload(request, 'image', imagePath, title)
+    }
     const rules = {
       title: 'string|min:10|max:200',
       description: 'string|min:10|max:300',
-      image: 'string|max:200',
       currentPrice: 'number|above:0',
       estimatedPrice: `number|above:${price}`,
       startTime: `date|after:${Moment().format('YYYY-MM-DD HH:mm:ss')}`,
@@ -78,7 +87,6 @@ class LotController {
     }
 
     try {
-      console.log(data)
       currentLot.merge(data)
       await currentLot.save()
       response.json({ message: 'Lot updated' })
@@ -108,7 +116,12 @@ class LotController {
 
   async destroy ({ response, params }) {
     try {
-      await Lot.findOrFail(+params.id).delete()
+      const currentLot = await Lot.findOrFail(+params.id)
+      if (currentLot.image) {
+        unlink(`${imagePath}/${currentLot.image}`)
+      }
+
+      await currentLot.delete()
       response.status(200).json({ message: 'Lot deleted' })
     } catch (err) {
       response.status(404).json({ message: 'Not found' })
