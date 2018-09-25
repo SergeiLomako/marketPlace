@@ -28,7 +28,7 @@ Factory.blueprint('App/Models/User', async (faker) => {
     lastname: faker.last(),
     email: faker.email({ domain: 'test.com' }),
     phone: faker.phone({ formatted: false }),
-    password: await Hash.make('qwerty'),
+    password: 'qwerty',
     confirmed: true,
     confirmationToken: faker.string({ length: 40 }),
     dob: faker.birthday({ type: 'adult' })

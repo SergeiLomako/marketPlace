@@ -19,7 +19,6 @@ class CreateLot {
   }
 
   get rules () {
-    const now = moment().format('YYYY-MM-DD HH:mm:ss')
     const statuses = ['pending', 'inProcess', 'closed']
     const request = this.ctx.request.all()
 
@@ -30,7 +29,7 @@ class CreateLot {
       status: `required|in:${statuses}`,
       currentPrice: 'required|number|above:0',
       estimatedPrice: `required|number|above:${request.currentPrice}`,
-      startTime: `required|date|after:${now}`,
+      startTime: `required|date|after:${moment().format('YYYY-MM-DD HH:mm:ss')}`,
       endTime: `required|date|after:${request.startTime}`
     }
   }

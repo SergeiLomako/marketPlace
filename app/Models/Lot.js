@@ -4,6 +4,16 @@ const Model = use('Model')
 const Env = use('Env')
 
 class Lot extends Model {
+  static get dates () {
+    return super.dates.concat(['startTime', 'endTime'])
+  }
+
+  static castDates (field, value) {
+    if (field === 'startTime' || field === 'endTime') {
+      return value.format('DD.MM.YYYY HH:mm')
+    }
+  }
+
   bids () {
     return this.hasMany('App/Models/Bid')
   }

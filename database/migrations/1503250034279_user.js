@@ -11,7 +11,7 @@ class UserSchema extends Schema {
       table.string('phone', 20).notNullable().unique()
       table.string('firstname', 20).notNullable()
       table.string('lastname', 20).notNullable()
-      table.string('password', 70).notNullable()
+      table.string('password', 60).notNullable()
       table.string('confirmationToken', 40)
       table.string('restorePasswordToken', 40)
       table.boolean('confirmed').defaultTo(false)

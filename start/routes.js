@@ -49,14 +49,13 @@ Route
       .validator('createLot')
 
     Route.put('/:id', 'LotController.update')
-      // .validator('UpdateLot')
-      .middleware(['checkAuthor', 'checkStatus'])
+      .middleware(['checkStatus', 'checkAuthor'])
 
     Route.put('/:id/changePrice', 'LotController.changePrice')
       .middleware(['changePrice', 'checkAuthor'])
 
     Route.delete('/:id', 'LotController.destroy')
-      .middleware(['checkAuthor'])
+      .middleware(['checkStatus', 'checkAuthor'])
   })
   .prefix('lots')
   .middleware(['auth'])
