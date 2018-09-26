@@ -37,7 +37,10 @@ const namedMiddleware = {
   checkStatus: 'App/Middleware/CheckStatus',
   changeStatus: 'App/Middleware/ChangePrice',
   checkAuthor: 'App/Middleware/CheckAuthor',
-  checkAccess: 'App/Middleware/CheckAccess'
+  checkAccess: 'App/Middleware/CheckAccess',
+  checkBidAuthor: 'App/Middleware/CheckBidAuthor',
+  checkPriceDifference: 'App/Middleware/CheckPriceDifference',
+  checkBidsCount: 'App/Middleware/CheckBidsCount'
 }
 
 /*

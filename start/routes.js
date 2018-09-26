@@ -57,6 +57,14 @@ Route
 
     Route.delete('/:id', 'LotController.destroy')
       .middleware(['checkStatus', 'checkAuthor'])
+
+    Route.post('/:id/bids', 'BidController.store')
+      .validator('createBid')
+      .middleware(['checkBidAuthor', 'checkBidsCount', 'checkPriceDifference'])
+
+    Route.get('/:id/bids', 'BidController.index')
+
+    Route.get('/:id/bids/:bidId', 'BidController.show')
   })
   .prefix('lots')
   .middleware(['auth'])
