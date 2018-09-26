@@ -2,6 +2,7 @@
 
 const { test, trait } = use('Test/Suite')('Restore password form testing')
 const User = use('App/Models/User')
+const Antl = use('Antl')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
@@ -24,7 +25,7 @@ test('check showing restore password form (fail)', async ({ client }) => {
     .end()
 
   response.assertStatus(200)
-  response.assertJSON({ message: 'Imagine that here the form of changing the password' })
+  response.assertJSON({ message: Antl.formatMessage('messages.imagineForm') })
 })
 
 test('check showing restore password form (success)', async ({ client }) => {
@@ -47,5 +48,5 @@ test('check showing restore password form (success)', async ({ client }) => {
     .end()
 
   response.assertStatus(200)
-  response.assertJSON({ message: 'Check your email!' })
+  response.assertJSON({ message: Antl.formatMessage('messages.checkEmail') })
 })

@@ -2,6 +2,7 @@
 
 const Lot = use('App/Models/Lot')
 const Env = use('Env')
+const Antl = use('Antl')
 const { validateAll, sanitize } = use('Validator')
 const moment = use('moment')
 const { createMessagesObj } = use('App/Helpers/validation')
@@ -15,14 +16,14 @@ class LotController {
       const lots = await Lot.getList(request, auth.user.id)
       response.json(lots)
     } catch (err) {
-      response.status(500).json({ message: 'Database error. Try again later' })
+      response.status(500).json({ message: Antl.formatMessage('messages.databaseError') })
     }
   }
 
   async store ({ request, response, auth }) {
     try {
       const data = request.all()
-      if (request._files.image !== undefined) {
+      if (request._files.image) {
         const uploadResult = await upload(request, 'image', imagePath, data.title)
         if (typeof uploadResult === 'object') {
           return response.status(400).json({ message: uploadResult.message })
@@ -31,7 +32,7 @@ class LotController {
       }
       data['user_id'] = auth.user.id
       await Lot.create(data)
-      response.status(201).json({ message: 'Lot created' })
+      response.status(201).json({ message: Antl.formatMessage('messages.lotCreated') })
     } catch ({ name, message }) {
       if (name === 'Error') {
         response.status(400).json({ message: message })
@@ -46,7 +47,7 @@ class LotController {
       const lot = await Lot.findOrFail(+params.id)
       response.json(lot)
     } catch (err) {
-      response.status(404).json({ message: 'Not found' })
+      response.status(404).json({ message: Antl.formatMessage('messages.notFound') })
     }
   }
 
@@ -72,7 +73,7 @@ class LotController {
     const data = sanitize(requestData, sanitizeRules)
     const price = request.input('currentPrice') || currentLot.currentPrice
     const time = request.input('startTime') || currentLot.startTime
-    if (request._files.image !== undefined) {
+    if (request._files.image) {
       const oldImage = currentLot.image
       const title = data.title || currentLot.title
       const uploadResult = await upload(request, 'image', imagePath, title)
@@ -103,7 +104,7 @@ class LotController {
     try {
       currentLot.merge(data)
       await currentLot.save()
-      response.json({ message: 'Lot updated' })
+      response.json({ message: Antl.formatMessage('messages.lotUpdated') })
     } catch ({ message }) {
       response.status(500).json({ message: message })
     }
@@ -111,12 +112,12 @@ class LotController {
 
   async changePrice ({ request, response, auth, params }) {
     try {
-      let message = 'Estimated price updated'
+      let message = Antl.formatMessage('messages.priceUpdated')
       const price = +request.input('price')
       const lot = await Lot.findOrFail(+params.id)
       if (lot.estimatedPrice <= price) {
         lot.status = 'closed'
-        message = 'Estimated price updated and lot closed'
+        message = Antl.formatMessage('messages.priceUpdatedLotClosed')
         // TODO Order create
       }
       lot.estimatedPrice = price
@@ -124,7 +125,7 @@ class LotController {
 
       response.status(200).json({ message })
     } catch (err) {
-      response.status(404).json({ message: 'Not found' })
+      response.status(404).json({ message: Antl.formatMessage('messages.notFound') })
     }
   }
 
@@ -136,9 +137,9 @@ class LotController {
       }
 
       await currentLot.delete()
-      response.status(200).json({ message: 'Lot deleted' })
+      response.status(200).json({ message: Antl.formatMessage('messages.lotDeleted') })
     } catch (err) {
-      response.status(404).json({ message: 'Not found' })
+      response.status(404).json({ message: Antl.formatMessage('messages.notFound') })
     }
   }
 }

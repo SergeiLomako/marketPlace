@@ -2,6 +2,7 @@
 
 const { test, trait } = use('Test/Suite')('Register testing')
 const Event = use('Event')
+const Antl = use('Antl')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
@@ -22,7 +23,7 @@ test('check register', async ({ assert, client }) => {
     })
     .end()
   response.assertStatus(201)
-  response.assertJSON({ message: 'User created' })
+  response.assertJSON({ message: Antl.formatMessage('messages.userCreated') })
 
   const recentEvent = Event.pullRecent()
   assert.equal(recentEvent.event, 'new::user')

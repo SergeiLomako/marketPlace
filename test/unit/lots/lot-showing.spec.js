@@ -3,6 +3,7 @@
 const { test, trait } = use('Test/Suite')('Lot showing')
 const User = use('App/Models/User')
 const Lot = use('App/Models/Lot')
+const Antl = use('Antl')
 const moment = use('moment')
 
 trait('DatabaseTransactions')
@@ -57,48 +58,7 @@ test('Show single lot (fail) (auth user not author and status is not "inProcess"
     .end()
   response.assertStatus(403)
   response.assertJSON({
-    message: 'Access denied'
-  })
-})
-
-test('Show single lot (success)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const startTime = moment()
-  const endTime = moment().add(1, 'days')
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    status: 'pending',
-    estimatedPrice: 200,
-    startTime: startTime.format('YYYY-MM-DD HH:mm:ss'),
-    endTime: endTime.format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.get(`/lots/${lot.id}`)
-    .loginVia(testUser, 'jwt')
-    .end()
-  response.assertStatus(200)
-  response.assertJSON({
-    currentPrice: 100,
-    description: null,
-    endTime: endTime.format('DD.MM.YYYY HH:mm'),
-    estimatedPrice: 200,
-    id: lot.id,
-    image: null,
-    startTime: startTime.format('DD.MM.YYYY HH:mm'),
-    status: 'pending',
-    title: 'Testing title',
-    'user_id': testUser.id
+    message: Antl.formatMessage('messages.accessDenied')
   })
 })
 

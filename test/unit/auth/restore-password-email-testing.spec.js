@@ -2,6 +2,7 @@
 
 const { test, trait } = use('Test/Suite')('Restore password email testing')
 const Event = use('Event')
+const Antl = use('Antl')
 const User = use('App/Models/User')
 
 trait('DatabaseTransactions')
@@ -16,7 +17,7 @@ test('check sending restore password email (fail)', async ({ client }) => {
     .end()
 
   response.assertStatus(404)
-  response.assertJSON({ message: 'User not found' })
+  response.assertJSON({ message: Antl.formatMessage('messages.userNotFound') })
 })
 
 test('check sending restore password email (success)', async ({ assert, client }) => {
@@ -41,7 +42,7 @@ test('check sending restore password email (success)', async ({ assert, client }
     .end()
 
   response.assertStatus(200)
-  response.assertJSON({ message: 'Check your email!' })
+  response.assertJSON({ message: Antl.formatMessage('messages.checkEmail') })
 
   const recentEvent = Event.pullRecent()
   assert.equal(recentEvent.event, 'restore::password')

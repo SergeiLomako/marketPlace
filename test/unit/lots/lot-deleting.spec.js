@@ -3,6 +3,7 @@
 const { test, trait } = use('Test/Suite')('Lot deleting')
 const User = use('App/Models/User')
 const Lot = use('App/Models/Lot')
+const Antl = use('Antl')
 const moment = use('moment')
 const Helpers = use('Helpers')
 const Database = use('Database')
@@ -58,7 +59,7 @@ test('Delete lot (fail) (not author)', async ({ assert, client }) => {
     .end()
   response.assertStatus(403)
   response.assertJSON({
-    message: 'Access denied'
+    message: Antl.formatMessage('messages.accessDenied')
   })
 })
 
@@ -87,7 +88,7 @@ test('Delete lot (fail) (status not "pending")', async ({ assert, client }) => {
     .end()
   response.assertStatus(403)
   response.assertJSON({
-    message: 'Lot is not in the pending status'
+    message: Antl.formatMessage('messages.notPending')
   })
 })
 
@@ -119,6 +120,6 @@ test('Delete lot (success)', async ({ assert, client }) => {
     .end()
   response.assertStatus(200)
   response.assertJSON({
-    message: 'Lot deleted'
+    message: Antl.formatMessage('messages.lotDeleted')
   })
 })

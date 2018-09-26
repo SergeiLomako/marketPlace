@@ -7,6 +7,7 @@ const moment = use('moment')
 const { generateMessage } = use('App/Helpers/validation')
 const Helpers = use('Helpers')
 const Database = use('Database')
+const Antl = use('Antl')
 const { unlink } = use('App/Helpers/files')
 
 trait('DatabaseTransactions')
@@ -135,6 +136,6 @@ test('Create lot (success)', async ({ assert, client }) => {
   await unlink(path)
   response.assertStatus(201)
   response.assertJSON({
-    message: 'Lot created'
+    message: Antl.formatMessage('messages.lotCreated')
   })
 })

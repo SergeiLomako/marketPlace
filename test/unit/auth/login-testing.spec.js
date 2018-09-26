@@ -2,6 +2,7 @@
 
 const { test, trait } = use('Test/Suite')('Login testing')
 const User = use('App/Models/User')
+const Antl = use('Antl')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
@@ -16,7 +17,7 @@ test('check login (fail (bad credentials))', async ({ client }) => {
     .end()
 
   response.assertStatus(400)
-  response.assertError({ message: 'Bad credentials given' })
+  response.assertError({ message: Antl.formatMessage('messages.badCredentials') })
 })
 
 test('check login (fail (not confirmed))', async ({ client }) => {
@@ -39,7 +40,7 @@ test('check login (fail (not confirmed))', async ({ client }) => {
     .end()
 
   response.assertStatus(403)
-  response.assertJSON({ message: 'Account not confirmed' })
+  response.assertJSON({ message: Antl.formatMessage('messages.accountNotConfirmed') })
 })
 
 test('check login (success)', async ({ client }) => {
@@ -64,5 +65,5 @@ test('check login (success)', async ({ client }) => {
 
   response.assertStatus(200)
   response.assertHeader('authorization', response.headers.authorization)
-  response.assertJSON({ message: 'Login OK' })
+  response.assertJSON({ message: Antl.formatMessage('messages.loginOk') })
 })

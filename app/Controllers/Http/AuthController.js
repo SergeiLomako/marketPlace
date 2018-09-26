@@ -2,6 +2,7 @@
 
 const Event = use('Event')
 const Env = use('Env')
+const Antl = use('Antl')
 const Route = use('Route')
 const User = use('App/Models/User')
 const randomString = require('random-string')
@@ -22,20 +23,20 @@ class AuthController {
     })
 
     Event.fire('new::user', { user, url, password })
-    response.status(201).json({ message: 'User created' })
+    response.status(201).json({ message: Antl.formatMessage('messages.userCreated') })
   }
 
   async confirmEmail ({ params, response }) {
     try {
       const user = await User.findBy('confirmationToken', params.token)
       if (!user) {
-        throw new Error('User not found')
+        throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
       user.confirmationToken = null
       user.confirmed = true
       await user.save()
 
-      response.json({ message: 'Your account is activated!' })
+      response.json({ message: Antl.formatMessage('messages.accountActivated') })
     } catch ({ message }) {
       response.status(404).json({ message })
     }
@@ -46,16 +47,16 @@ class AuthController {
       const { email, password } = request.all()
       const user = await User.findBy('email', email)
       if (user && user.confirmed === false) {
-        throw new Error('Account not confirmed')
+        throw new Error(Antl.formatMessage('messages.accountNotConfirmed'))
       }
       const { token } = await auth.attempt(email, password)
       response.header('Authorization', `Bearer ${token}`)
-      response.json({ message: 'Login OK' })
+      response.json({ message: Antl.formatMessage('messages.loginOk') })
     } catch ({ name, message }) {
       if (name === 'Error') {
         response.status(403).json({ message })
       } else {
-        response.status(400).json({ message: 'Bad credentials given' })
+        response.status(400).json({ message: Antl.formatMessage('messages.badCredentials') })
       }
     }
   }
@@ -64,10 +65,10 @@ class AuthController {
     try {
       const user = await User.findBy('restorePasswordToken', params.token)
       if (!user) {
-        throw new Error('User not found')
+        throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
 
-      response.json({ message: 'Imagine that here the form of changing the password' })
+      response.json({ message: Antl.formatMessage('messages.imagineForm') })
     } catch ({ message }) {
       response.status(404).json({ message })
     }
@@ -77,7 +78,7 @@ class AuthController {
     try {
       const user = await User.findBy('email', request.input('email'))
       if (!user) {
-        throw new Error('User not found')
+        throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
       const restoreToken = randomString({ length: 40 })
       const url = `${Env.get('APP_URL')}${Route.url('restoreEmail', { token: restoreToken })}`
@@ -86,7 +87,7 @@ class AuthController {
 
       Event.fire('restore::password', { user, url })
 
-      response.json({ message: 'Check your email!' })
+      response.json({ message: Antl.formatMessage('messages.checkEmail') })
     } catch ({ message }) {
       response.status(404).json({ message })
     }
@@ -96,14 +97,14 @@ class AuthController {
     try {
       const user = await User.findBy('restorePasswordToken', request.input('token'))
       if (!user) {
-        throw new Error('User not found')
+        throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
       user.restorePasswordToken = null
       user.password = request.input('password')
       await user.save()
       const { token } = await auth.attempt(user.email, request.input('password'))
       response.header('Authorization', token)
-      response.json({ message: 'Password successfully changed' })
+      response.json({ message: Antl.formatMessage('messages.passwordChanged') })
     } catch ({ message }) {
       response.status(404).json({ message })
     }

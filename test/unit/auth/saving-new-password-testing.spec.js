@@ -2,6 +2,7 @@
 
 const { test, trait } = use('Test/Suite')('Saving new password testing')
 const User = use('App/Models/User')
+const Antl = use('Antl')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
@@ -17,7 +18,7 @@ test('check saving new password (fail)', async ({ client }) => {
     .end()
 
   response.assertStatus(404)
-  response.assertJSON({ message: 'User not found' })
+  response.assertJSON({ message: Antl.formatMessage('messages.userNotFound') })
 })
 
 test('check saving new password (success)', async ({ assert, client }) => {
@@ -48,5 +49,5 @@ test('check saving new password (success)', async ({ assert, client }) => {
   assert.isNull(user.restorePasswordToken)
   response.assertHeader('authorization', response.headers.authorization)
   response.assertStatus(200)
-  response.assertJSON({ message: 'Password successfully changed' })
+  response.assertJSON({ message: Antl.formatMessage('messages.passwordChanged') })
 })
