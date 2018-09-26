@@ -11,3 +11,6 @@ tmp
 database/development.sqlite
 
 .idea
+npm-debug.log
+
+public/uploads

@@ -11,12 +11,46 @@
 |
 */
 
-// const Factory = use('Factory')
+const Factory = use('Factory')
+const Hash = use('Hash')
+const Moment = use('moment')
+const statuses = ['pending', 'inProcess']
 
-/**
-  Factory.blueprint('App/Models/User', (faker) => {
-    return {
-      username: faker.username()
-    }
-  })
-*/
+function randomInt (min, max) {
+  let rand = min - 0.5 + Math.random() * (max - min + 1)
+  rand = Math.round(rand)
+  return rand
+}
+
+Factory.blueprint('App/Models/User', async (faker) => {
+  return {
+    firstname: faker.first(),
+    lastname: faker.last(),
+    email: faker.email({ domain: 'test.com' }),
+    phone: faker.phone({ formatted: false }),
+    password: 'qwerty',
+    confirmed: true,
+    confirmationToken: faker.string({ length: 40 }),
+    dob: faker.birthday({ type: 'adult' })
+  }
+})
+
+Factory.blueprint('App/Models/Lot', async (faker) => {
+  return {
+    'user_id': randomInt(1, 5),
+    title: faker.paragraph({ sentences: 1 }),
+    status: statuses[randomInt(0, 1)],
+    currentPrice: faker.integer({ min: randomInt(10, 50), max: randomInt(50, 70) }),
+    estimatedPrice: faker.integer({ min: randomInt(80, 90), max: randomInt(120, 200) }),
+    startTime: Moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+    endTime: Moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss')
+  }
+})
+
+Factory.blueprint('App/Models/Bid', async () => {
+  return {
+    'user_id': randomInt(1, 5),
+    'lot_id': randomInt(1, 5),
+    proposedPrice: randomInt(50, 80)
+  }
+})

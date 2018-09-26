@@ -1,0 +1,20 @@
+{
+  "userCreated": "User created",
+  "accountActivated": "Your account is activated!",
+  "userNotFound": "User not found",
+  "accountNotConfirmed": "Account not confirmed",
+  "loginOk": "Login OK",
+  "badCredentials": "Bad credentials given",
+  "imagineForm": "Imagine that here the form of changing the password",
+  "checkEmail": "Check your email!",
+  "passwordChanged": "Password successfully changed",
+  "databaseError": "Database error. Try again later",
+  "lotCreated": "Lot created",
+  "notFound": "Not found",
+  "lotUpdated": "Lot updated",
+  "priceUpdated": "Estimated price updated",
+  "priceUpdatedLotClosed": "Estimated price updated and lot closed",
+  "lotDeleted": "Lot deleted",
+  "accessDenied": "Access denied",
+  "notPending": "Lot is not in the pending status"
+}
