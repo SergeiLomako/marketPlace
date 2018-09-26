@@ -4,7 +4,7 @@ const rules = {
   password: 'required|min:6|max:30|confirmed',
   token: 'required'
 }
-const messages = use('App/Helpers/validation')(rules)
+const { createMessagesObj } = use('App/Helpers/validation')
 
 class changePassword {
   get validateAll () {
@@ -16,7 +16,7 @@ class changePassword {
   }
 
   get messages () {
-    return messages
+    return createMessagesObj(rules)
   }
 }
 

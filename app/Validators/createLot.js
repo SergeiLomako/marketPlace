@@ -1,7 +1,7 @@
 'use strict'
 const moment = use('moment')
 
-const messages = use('App/Helpers/validation')
+const { createMessagesObj } = use('App/Helpers/validation')
 
 class CreateLot {
   get validateAll () {
@@ -32,7 +32,7 @@ class CreateLot {
   }
 
   get messages () {
-    return messages(this.rules)
+    return createMessagesObj(this.rules)
   }
 }
 

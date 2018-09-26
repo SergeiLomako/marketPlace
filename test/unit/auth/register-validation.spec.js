@@ -5,7 +5,7 @@ const { validateAll } = use('Validator')
 const { test } = use('Test/Suite')('Register validation')
 const StoreUser = use('App/Validators/storeUser')
 const StoreUserValidator = new StoreUser()
-const generateMessage = use('App/Helpers/validation').generateMessage
+const { generateMessage } = use('App/Helpers/validation')
 
 test('check validator register (fail)', async ({ assert }) => {
   const fakeData = {

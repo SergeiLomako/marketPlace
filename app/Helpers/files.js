@@ -1,16 +1,15 @@
 'use strict'
 
 const { sanitizor } = use('Validator')
-const Moment = use('moment')
-const Helpers = use('Helpers')
-const removeFile = Helpers.promisify(require('fs').unlink)
+const moment = use('moment')
+const Drive = use('Drive')
 
 async function upload (request, file, path, title) {
   const image = request.file(file, {
     types: ['image'],
     size: '2mb'
   })
-  const imageName = `${sanitizor.slug(title)}-${Moment().unix()}.${image.subtype}`
+  const imageName = `${sanitizor.slug(title)}-${moment().unix()}.${image.subtype}`
 
   await image.move(path, {
     name: imageName
@@ -19,8 +18,10 @@ async function upload (request, file, path, title) {
   return image.moved() ? imageName : image.error()
 }
 
-function unlink (path) {
-  removeFile(path)
+async function unlink (path) {
+  if (await Drive.exists(path)) {
+    await Drive.delete(path)
+  }
 }
 
 module.exports = { upload, unlink }

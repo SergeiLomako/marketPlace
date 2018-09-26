@@ -36,7 +36,8 @@ const namedMiddleware = {
   auth: 'Adonis/Middleware/Auth',
   checkStatus: 'App/Middleware/CheckStatus',
   changeStatus: 'App/Middleware/ChangePrice',
-  checkAuthor: 'App/Middleware/CheckAuthor'
+  checkAuthor: 'App/Middleware/CheckAuthor',
+  checkAccess: 'App/Middleware/CheckAccess'
 }
 
 /*

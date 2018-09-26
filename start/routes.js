@@ -44,6 +44,7 @@ Route
     Route.get('/', 'LotController.index')
 
     Route.get('/:id', 'LotController.show')
+      .middleware(['checkAccess'])
 
     Route.post('/', 'LotController.store')
       .validator('createLot')
@@ -52,7 +53,7 @@ Route
       .middleware(['checkStatus', 'checkAuthor'])
 
     Route.put('/:id/changePrice', 'LotController.changePrice')
-      .middleware(['changePrice', 'checkAuthor'])
+      .middleware(['changePrice'])
 
     Route.delete('/:id', 'LotController.destroy')
       .middleware(['checkStatus', 'checkAuthor'])

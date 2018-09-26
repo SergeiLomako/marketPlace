@@ -4,7 +4,7 @@ const { validateAll } = use('Validator')
 const { test } = use('Test/Suite')('Login validation')
 const LoginUser = use('App/Validators/loginUser')
 const LoginUserValidator = new LoginUser()
-const generateMessage = use('App/Helpers/validation').generateMessage
+const { generateMessage } = use('App/Helpers/validation')
 
 test('check validator login (fail)', async ({ assert }) => {
   const fakeData = {

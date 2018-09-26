@@ -3,8 +3,8 @@
 const Lot = use('App/Models/Lot')
 const Env = use('Env')
 const { validateAll, sanitize } = use('Validator')
-const Moment = use('moment')
-const Messages = use('App/Helpers/validation')
+const moment = use('moment')
+const { createMessagesObj } = use('App/Helpers/validation')
 const Helpers = use('Helpers')
 const { upload, unlink } = use('App/Helpers/files')
 const imagePath = Helpers.publicPath(Env.get('IMAGE_FOLDER'))
@@ -23,13 +23,21 @@ class LotController {
     try {
       const data = request.all()
       if (request._files.image !== undefined) {
-        data.image = await upload(request, 'image', imagePath, data.title)
+        const uploadResult = await upload(request, 'image', imagePath, data.title)
+        if (typeof uploadResult === 'object') {
+          return response.status(400).json({ message: uploadResult.message })
+        }
+        data.image = uploadResult
       }
       data['user_id'] = auth.user.id
       await Lot.create(data)
       response.status(201).json({ message: 'Lot created' })
-    } catch ({ message }) {
-      response.status(500).json({ message: message })
+    } catch ({ name, message }) {
+      if (name === 'Error') {
+        response.status(400).json({ message: message })
+      } else {
+        response.status(500).json({ message: message })
+      }
     }
   }
 
@@ -65,25 +73,31 @@ class LotController {
     const price = request.input('currentPrice') || currentLot.currentPrice
     const time = request.input('startTime') || currentLot.startTime
     if (request._files.image !== undefined) {
+      const oldImage = currentLot.image
       const title = data.title || currentLot.title
-      if (currentLot.image) {
-        unlink(`${imagePath}/${currentLot.image}`)
+      const uploadResult = await upload(request, 'image', imagePath, title)
+      if (typeof uploadResult === 'object') {
+        return response.status(400).json({ message: uploadResult.message })
       }
-      data.image = await upload(request, 'image', imagePath, title)
+      if (oldImage) {
+        await unlink(`${imagePath}/${currentLot.image}`)
+      }
+
+      data.image = uploadResult
     }
     const rules = {
       title: 'string|min:10|max:200',
       description: 'string|min:10|max:300',
       currentPrice: 'number|above:0',
       estimatedPrice: `number|above:${price}`,
-      startTime: `date|after:${Moment().format('YYYY-MM-DD HH:mm:ss')}`,
+      startTime: `date|after:${moment().format('YYYY-MM-DD HH:mm:ss')}`,
       endTime: `date|after:${time}`
     }
 
-    const messages = Messages(rules)
+    const messages = createMessagesObj(rules)
     const validation = await validateAll(data, rules, messages)
     if (validation.fails()) {
-      return validation.messages()
+      return response.status(400).json(validation.messages())
     }
 
     try {
@@ -118,7 +132,7 @@ class LotController {
     try {
       const currentLot = await Lot.findOrFail(+params.id)
       if (currentLot.image) {
-        unlink(`${imagePath}/${currentLot.image}`)
+        await unlink(`${imagePath}/${currentLot.image}`)
       }
 
       await currentLot.delete()

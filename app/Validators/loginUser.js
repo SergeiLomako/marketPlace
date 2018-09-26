@@ -4,7 +4,7 @@ const rules = {
   email: 'required|email',
   password: 'required'
 }
-const messages = use('App/Helpers/validation')(rules)
+const { createMessagesObj } = use('App/Helpers/validation')
 
 class loginUser {
   get validateAll () {
@@ -23,7 +23,7 @@ class loginUser {
   }
 
   get messages () {
-    return messages
+    return createMessagesObj(rules)
   }
 }
 

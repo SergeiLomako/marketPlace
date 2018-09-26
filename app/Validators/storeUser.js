@@ -8,7 +8,7 @@ const rules = {
   password: 'required|min:6|max:30',
   dob: 'required|date|before_offset_of:21,years'
 }
-const messages = use('App/Helpers/validation')(rules)
+const { createMessagesObj } = use('App/Helpers/validation')
 
 class StoreUser {
   get validateAll () {
@@ -29,7 +29,7 @@ class StoreUser {
   }
 
   get messages () {
-    return messages
+    return createMessagesObj(rules)
   }
 }
 

@@ -50,4 +50,4 @@ const createMessagesObj = function (rules) {
   return messagesObj
 }
 
-module.exports = createMessagesObj
+module.exports = { createMessagesObj, generateMessage }
