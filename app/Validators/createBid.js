@@ -1,10 +1,26 @@
 'use strict'
 
+const { createMessagesObj } = use('App/Helpers/validation')
+
 class createBid {
+  get validateAll () {
+    return true
+  }
+
+  get sanitizationRules () {
+    return {
+      proposedPrice: 'to_int'
+    }
+  }
+
   get rules () {
     return {
-      // validation rules
+      proposedPrice: 'required|above:0'
     }
+  }
+
+  get messages () {
+    return createMessagesObj(this.rules)
   }
 }
 

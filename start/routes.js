@@ -60,7 +60,6 @@ Route
 
     Route.post('/:id/bids', 'BidController.store')
       .validator('createBid')
-      .middleware(['checkBidAuthor', 'checkBidsCount', 'checkPriceDifference'])
 
     Route.get('/:id/bids', 'BidController.index')
 

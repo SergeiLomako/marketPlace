@@ -19,6 +19,7 @@
   "notPending": "Lot is not in the pending status",
   "bidLimitOver": "Bid limit for this lot is over ( max: {count})",
   "bellowCurrentPrice": "Bid price below current price",
-  "notBetYourLot": "can not bet on your lot",
-  "bidCreated": "Bid created"
+  "notBetYourLot": "Can not bet on your lot",
+  "bidCreated": "Bid created",
+  "notInProcess": "Lot must be only inProcess status"
 }
