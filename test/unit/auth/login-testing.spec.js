@@ -1,14 +1,15 @@
 'use strict'
 
 const { test, trait } = use('Test/Suite')('Login testing')
-const User = use('App/Models/User')
 const Antl = use('Antl')
+const Route = use('Route')
+const Factory = use('Factory')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 
 test('check login (fail (bad credentials))', async ({ client }) => {
-  const response = await client.post('/login')
+  const response = await client.post(Route.url('login'))
     .send({
       email: 'notexist@email.com',
       password: 'qwerty'
@@ -21,20 +22,11 @@ test('check login (fail (bad credentials))', async ({ client }) => {
 })
 
 test('check login (fail (not confirmed))', async ({ client }) => {
-  const password = 'qwerty'
-  const testUser = await User.create({
-    email: 'testinguser@email.com',
-    phone: '1234567890',
-    firstname: 'John',
-    lastname: 'Doe',
-    password: password,
-    dob: '2018-10-21'
-  })
-
-  const response = await client.post('/login')
+  const user = await Factory.model('App/Models/User').create()
+  const response = await client.post(Route.url('login'))
     .field({
-      email: testUser.email,
-      password: password
+      email: user.email,
+      password: 'qwerty'
     })
     .accept('json')
     .end()
@@ -44,21 +36,12 @@ test('check login (fail (not confirmed))', async ({ client }) => {
 })
 
 test('check login (success)', async ({ client }) => {
-  const password = 'qwerty'
-  const testUser = await User.create({
-    email: 'testinguser@email.com',
-    phone: '1234567890',
-    firstname: 'John',
-    lastname: 'Doe',
-    password: password,
-    dob: '2018-10-21',
-    confirmed: true
-  })
+  const user = await Factory.model('App/Models/User').create({ confirmed: true })
 
-  const response = await client.post('/login')
+  const response = await client.post(Route.url('login'))
     .field({
-      email: testUser.email,
-      password: password
+      email: user.email,
+      password: 'qwerty'
     })
     .accept('json')
     .end()

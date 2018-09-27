@@ -3,15 +3,17 @@
 const { test, trait } = use('Test/Suite')('Saving new password testing')
 const User = use('App/Models/User')
 const Antl = use('Antl')
+const Route = use('Route')
+const Factory = use('Factory')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 
 test('check saving new password (fail)', async ({ client }) => {
-  const response = await client.put('/saveNewPassword')
+  const response = await client.put(Route.url('saveNewPassword'))
     .accept('json')
     .field({
-      token: 'wrong token',
+      restoreToken: 'wrong token',
       password: 'qwerty',
       password_confirmation: 'qwerty'
     })
@@ -22,31 +24,23 @@ test('check saving new password (fail)', async ({ client }) => {
 })
 
 test('check saving new password (success)', async ({ assert, client }) => {
-  const email = 'testinguser123@email.com'
-  const token = 'restorePasswordToken'
-  await User.create({
-    email: email,
-    phone: '1234567890',
-    firstname: 'John',
-    lastname: 'Doe',
-    password: 'qwerty',
-    dob: '2018-10-21',
-    confirmationToken: 'confirmationToken',
-    restorePasswordToken: token
-  })
+  const confirmationToken = 'confirmationToken'
+  const restoreToken = 'restorePasswordToken'
+  const user = await Factory.model('App/Models/User')
+    .create({ confirmationToken, restoreToken })
   const response = await client.put('/saveNewPassword')
     .accept('json')
     .field({
-      token: token,
       password: 'qwerty',
-      password_confirmation: 'qwerty'
+      password_confirmation: 'qwerty',
+      restoreToken
     })
     .end()
 
-  const user = await User.findBy('email', email)
+  const checkUser = await User.findBy('email', user.email)
 
-  assert.isNotNull(user)
-  assert.isNull(user.restorePasswordToken)
+  assert.isNotNull(checkUser)
+  assert.isNull(checkUser.restorePasswordToken)
   response.assertHeader('authorization', response.headers.authorization)
   response.assertStatus(200)
   response.assertJSON({ message: Antl.formatMessage('messages.passwordChanged') })

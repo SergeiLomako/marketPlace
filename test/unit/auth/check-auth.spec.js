@@ -1,13 +1,14 @@
 'use strict'
 
 const { test, trait } = use('Test/Suite')('Check Auth')
-const User = use('App/Models/User')
+const Route = use('Route')
+const Factory = use('Factory')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 
 test('checkAuth()  (false)', async ({ assert, client }) => {
-  const response = await client.get('/checkAuth')
+  const response = await client.get(Route.url('checkAuth'))
     .header('Authorization', 'wrongToken')
     .end()
 
@@ -16,29 +17,19 @@ test('checkAuth()  (false)', async ({ assert, client }) => {
 })
 
 test('checkAuth()  (true)', async ({ assert, client }) => {
-  const email = 'testinguser@testing.com'
-  const password = 'qwerty'
-  await User.create({
-    firstname: 'test',
-    lastname: 'test',
-    email: email,
-    password: password,
-    phone: 7777777777,
-    confirmed: true,
-    dob: '1980-10-10'
-  })
+  const user = await Factory.model('App/Models/User').create({ confirmed: true })
 
-  const loginResponse = await client.post('/login')
+  const loginResponse = await client.post(Route.url('login'))
     .field({
-      email: email,
-      password: password
+      email: user.email,
+      password: 'qwerty'
     })
     .accept('json')
     .end()
 
   const token = loginResponse.headers.authorization
 
-  const checkResponse = await client.get('/checkAuth')
+  const checkResponse = await client.get(Route.url('checkAuth'))
     .header('Authorization', token)
     .end()
 

@@ -2,7 +2,7 @@
 
 const rules = {
   password: 'required|min:6|max:30|confirmed',
-  token: 'required'
+  restoreToken: 'required'
 }
 const { createMessagesObj } = use('App/Helpers/validation')
 

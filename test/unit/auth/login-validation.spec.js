@@ -4,28 +4,19 @@ const { validateAll } = use('Validator')
 const { test } = use('Test/Suite')('Login validation')
 const LoginUser = use('App/Validators/loginUser')
 const LoginUserValidator = new LoginUser()
-const { generateMessage } = use('App/Helpers/validation')
+const { generateErrors } = use('App/Helpers/validation')
 
 test('check validator login (fail)', async ({ assert }) => {
   const fakeData = {
     email: 'fake email'
   }
 
+  const failRules = ['email.email', 'password.required']
+
   const validation = await validateAll(fakeData, LoginUserValidator.rules, LoginUserValidator.messages)
 
   assert.isTrue(validation.fails())
-  assert.deepEqual(validation.messages(), [
-    {
-      field: 'email',
-      message: generateMessage('email', 'email').title,
-      validation: 'email'
-    },
-    {
-      field: 'password',
-      message: generateMessage('password', 'required').title,
-      validation: 'required'
-    }
-  ])
+  assert.deepEqual(validation.messages(), generateErrors(failRules))
 })
 
 test('check validator login (success)', async ({ assert }) => {

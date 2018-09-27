@@ -12,7 +12,6 @@
 */
 
 const Factory = use('Factory')
-const Hash = use('Hash')
 const Moment = use('moment')
 const statuses = ['pending', 'inProcess']
 
@@ -22,15 +21,16 @@ function randomInt (min, max) {
   return rand
 }
 
-Factory.blueprint('App/Models/User', async (faker) => {
+Factory.blueprint('App/Models/User', async (faker, i, data) => {
   return {
     firstname: faker.first(),
     lastname: faker.last(),
+    restorePasswordToken: data.restoreToken || null,
     email: faker.email({ domain: 'test.com' }),
     phone: faker.phone({ formatted: false }),
     password: 'qwerty',
-    confirmed: true,
-    confirmationToken: faker.string({ length: 40 }),
+    confirmed: data.confirmed || false,
+    confirmationToken: data.confirmationToken || faker.string({ length: 40 }),
     dob: faker.birthday({ type: 'adult' })
   }
 })

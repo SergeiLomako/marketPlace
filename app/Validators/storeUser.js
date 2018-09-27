@@ -6,7 +6,7 @@ const rules = {
   firstname: 'required|string|min:2|max:20',
   lastname: 'required|string|min:2|max:30',
   password: 'required|min:6|max:30',
-  dob: 'required|date|before_offset_of:21,years'
+  dob: 'required|date|beforeOffsetOf:21,years'
 }
 const { createMessagesObj } = use('App/Helpers/validation')
 

@@ -110,25 +110,6 @@ class LotController {
     }
   }
 
-  async changePrice ({ request, response, auth, params }) {
-    try {
-      let message = Antl.formatMessage('messages.priceUpdated')
-      const price = +request.input('price')
-      const lot = await Lot.findOrFail(+params.id)
-      if (lot.estimatedPrice <= price) {
-        lot.status = 'closed'
-        message = Antl.formatMessage('messages.priceUpdatedLotClosed')
-        // TODO Order create
-      }
-      lot.estimatedPrice = price
-      await lot.save()
-
-      response.status(200).json({ message })
-    } catch (err) {
-      response.status(404).json({ message: Antl.formatMessage('messages.notFound') })
-    }
-  }
-
   async destroy ({ response, params }) {
     try {
       const currentLot = await Lot.findOrFail(+params.id)

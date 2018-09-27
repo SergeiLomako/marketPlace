@@ -10,7 +10,7 @@ const randomString = require('random-string')
 class AuthController {
   async register ({ request, auth, response }) {
     const confirmationToken = randomString({ length: 40 })
-    const url = Env.get('APP_URL') + Route.url('confirm', { token: confirmationToken })
+    const url = Env.get('APP_URL') + Route.url('confirm', { confirmationToken })
     const { email, password, firstname, lastname, phone, dob } = request.all()
     const user = await User.create({
       confirmationToken,
@@ -28,7 +28,7 @@ class AuthController {
 
   async confirmEmail ({ params, response }) {
     try {
-      const user = await User.findBy('confirmationToken', params.token)
+      const user = await User.findBy('confirmationToken', params.confirmationToken)
       if (!user) {
         throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
@@ -63,7 +63,7 @@ class AuthController {
 
   async showRestorePasswordForm ({ request, response, params }) {
     try {
-      const user = await User.findBy('restorePasswordToken', params.token)
+      const user = await User.findBy('restorePasswordToken', params.restoreToken)
       if (!user) {
         throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
@@ -81,7 +81,7 @@ class AuthController {
         throw new Error(Antl.formatMessage('messages.userNotFound'))
       }
       const restoreToken = randomString({ length: 40 })
-      const url = `${Env.get('APP_URL')}${Route.url('restoreEmail', { token: restoreToken })}`
+      const url = `${Env.get('APP_URL')}${Route.url('restoreEmail', { restoreToken })}`
       user.restorePasswordToken = restoreToken
       await user.save()
 
@@ -95,7 +95,7 @@ class AuthController {
 
   async saveNewPassword ({ request, response, auth }) {
     try {
-      const user = await User.findBy('restorePasswordToken', request.input('token'))
+      const user = await User.findBy('restorePasswordToken', request.input('restoreToken'))
       if (!user) {
         throw new Error(Antl.formatMessage('messages.userNotFound'))
       }

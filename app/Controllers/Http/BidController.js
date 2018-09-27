@@ -7,8 +7,9 @@ const Event = use('Event')
 const Antl = use('Antl')
 
 class BidController {
-  async index ({ params }) {
-
+  async index ({ params, response }) {
+    const bids = await Bid.query().paginate(1, 5)
+    console.log(bids.toJSON())
   }
 
   async show ({ params }) {
@@ -19,9 +20,9 @@ class BidController {
     try {
       const lot = await Lot.findOrFail(+params.id)
       const proposedPrice = request.input('proposedPrice')
-      const checkResult = await beforeCreate(lot, auth.user.id, proposedPrice)
-      if (checkResult) {
-        return response.status(400).json({ message: checkResult })
+      const error = await beforeCreate(lot, auth.user.id, proposedPrice)
+      if (error) {
+        return response.status(400).json({ message: error })
       }
       await Bid.create({
         'user_id': auth.user.id,

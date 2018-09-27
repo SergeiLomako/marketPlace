@@ -10,7 +10,7 @@
   "after": "{field} must be later than {value}",
   "in": "{field} must match one value from the list: {value}",
   "above": "{field} must be greater than {value}",
-  "before_offset_of": "You must be over {value} years old",
+  "beforeOffsetOf": "You must be over {value} years old",
   "confirmed": "{field}s do not match",
   "number": "{field} must be number"
 }

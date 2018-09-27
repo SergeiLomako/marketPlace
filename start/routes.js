@@ -21,49 +21,58 @@ Route.get('/', () => {
 
 Route.post('/register', 'AuthController.register')
   .validator('storeUser')
+  .as('register')
 
-Route.get('/register/confirm/:token', 'AuthController.confirmEmail').as('confirm')
+Route.get('/register/confirm/:confirmationToken', 'AuthController.confirmEmail')
+  .as('confirm')
 
 Route.get('/checkAuth', 'AuthController.checkAuth')
+  .as('checkAuth')
 
 Route.post('/login', 'AuthController.login')
   .validator('loginUser')
-
-Route.post('/logout', 'AuthController.logout')
-  .middleware(['auth'])
+  .as('login')
 
 Route.put('/sendRestorePassword', 'AuthController.sendRestorePasswordEmail')
+  .as('sendRestorePassword')
 
-Route.get('/restorePasswordForm/:token', 'AuthController.showRestorePasswordForm').as('restoreEmail')
+Route.get('/restorePasswordForm/:restoreToken', 'AuthController.showRestorePasswordForm')
+  .as('restoreEmail')
 
 Route.put('/saveNewPassword', 'AuthController.saveNewPassword')
   .validator('changePassword')
+  .as('saveNewPassword')
 
 Route
   .group(() => {
     Route.get('/', 'LotController.index')
+      .as('lots')
 
     Route.get('/:id', 'LotController.show')
       .middleware(['checkAccess'])
+      .as('showLot')
 
     Route.post('/', 'LotController.store')
       .validator('createLot')
+      .as('createLot')
 
     Route.put('/:id', 'LotController.update')
       .middleware(['checkStatus', 'checkAuthor'])
-
-    Route.put('/:id/changePrice', 'LotController.changePrice')
-      .middleware(['changePrice'])
+      .as('updateLot')
 
     Route.delete('/:id', 'LotController.destroy')
       .middleware(['checkStatus', 'checkAuthor'])
+      .as('deleteLot')
 
     Route.post('/:id/bids', 'BidController.store')
       .validator('createBid')
+      .as('createBid')
 
     Route.get('/:id/bids', 'BidController.index')
+      .as('bids')
 
     Route.get('/:id/bids/:bidId', 'BidController.show')
+      .as('showBid')
   })
   .prefix('lots')
   .middleware(['auth'])
