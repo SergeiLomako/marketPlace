@@ -1,83 +1,57 @@
 'use strict'
 
-const { test, trait } = use('Test/Suite')('Lot updating')
-const User = use('App/Models/User')
-const Lot = use('App/Models/Lot')
+const { test, trait, before } = use('Test/Suite')('Lot updating')
 const moment = use('moment')
+const Factory = use('Factory')
+const Route = use('Route')
 const Env = use('Env')
-const { generateMessage } = use('App/Helpers/validation')
+const Lot = use('App/Models/Lot')
+const { generateErrors } = use('App/Helpers/validation')
 const Helpers = use('Helpers')
 const { unlink } = use('App/Helpers/files')
+let user
+let user1
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 trait('Auth/Client')
 
+before(async () => {
+  user = await Factory.model('App/Models/User').create()
+  user1 = await Factory.model('App/Models/User').create()
+})
+
 test('Update lot (fail) (bad request)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'pending'
   })
 
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const time = moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+  const time = moment().add(1, 'days').toISOString()
   const price = -12
-  const response = await client.put(`/lots/${lot.id}`)
+  const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
       title: 'short',
       currentPrice: price,
       estimatedPrice: 'wrongData',
       startTime: time,
-      endTime: moment().format('YYYY-MM-DD HH:mm:ss')
+      endTime: moment().toISOString()
     })
     .accept('json')
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .end()
 
+  const failRules = [
+    'title.min:10', 'currentPrice.above:0', 'estimatedPrice.number',
+    `estimatedPrice.above:${price}`, `endTime.after:${time}`
+  ]
+
   response.assertStatus(400)
-  response.assertJSON([
-    {
-      field: 'title',
-      message: generateMessage('title', 'min:10').title,
-      validation: 'min'
-    },
-    {
-      field: 'currentPrice',
-      message: generateMessage('currentPrice', 'above:0').title,
-      validation: 'above'
-    },
-    {
-      field: 'estimatedPrice',
-      message: generateMessage('estimatedPrice', 'number').title,
-      validation: 'number'
-    },
-    {
-      field: 'estimatedPrice',
-      message: generateMessage('estimatedPrice', `above:${price}`).title,
-      validation: 'above'
-    },
-    {
-      field: 'endTime',
-      message: generateMessage('endTime', `after:${time}`).title,
-      validation: 'after'
-    }
-  ])
+  response.assertJSON(generateErrors(failRules))
 })
 
 test('Update lot (fail) (not auth)', async ({ assert, client }) => {
-  const response = await client.put('/lots/1')
+  const response = await client.put(Route.url('updateLot', { id: 1 }))
     .accept('json')
     .end()
 
@@ -91,34 +65,21 @@ test('Update lot (fail) (not auth)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'pending'
   })
 
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.put(`/lots/${lot.id}`)
+  const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-      endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+      startTime: moment().toISOString(),
+      endTime: moment().add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/notImage.txt'))
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .end()
   response.assertStatus(400)
   response.assertJSON({
@@ -127,35 +88,13 @@ test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (not author)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'pending'
   })
 
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.put(`/lots/${lot.id}`)
-    .loginVia(testUser1, 'jwt')
+  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+    .loginVia(user1, 'jwt')
     .end()
   response.assertStatus(403)
   response.assertJSON({
@@ -164,27 +103,14 @@ test('Update lot (fail) (not author)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'inProcess'
   })
 
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    status: 'inProcess',
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.put(`/lots/${lot.id}`)
-    .loginVia(testUser, 'jwt')
+  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+    .loginVia(user, 'jwt')
     .end()
   response.assertStatus(403)
   response.assertJSON({
@@ -193,35 +119,21 @@ test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
 })
 
 test('Update lot (success)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'pending'
   })
 
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    status: 'pending',
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.put(`/lots/${lot.id}`)
+  const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-      endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+      startTime: moment().toISOString(),
+      endTime: moment().add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/nature.jpg'))
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .end()
 
   const { image } = await Lot.findOrFail(lot.id)

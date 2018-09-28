@@ -18,7 +18,6 @@ test('checkAuth()  (false)', async ({ assert, client }) => {
 
 test('checkAuth()  (true)', async ({ assert, client }) => {
   const user = await Factory.model('App/Models/User').create({ confirmed: true })
-
   const loginResponse = await client.post(Route.url('login'))
     .field({
       email: user.email,
@@ -28,7 +27,6 @@ test('checkAuth()  (true)', async ({ assert, client }) => {
     .end()
 
   const token = loginResponse.headers.authorization
-
   const checkResponse = await client.get(Route.url('checkAuth'))
     .header('Authorization', token)
     .end()

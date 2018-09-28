@@ -1,75 +1,51 @@
 'use strict'
 
-const { test, trait } = use('Test/Suite')('Lot creating')
+const { test, trait, before } = use('Test/Suite')('Lot creating')
 const Env = use('Env')
-const User = use('App/Models/User')
+const Factory = use('Factory')
 const moment = use('moment')
-const { generateMessage } = use('App/Helpers/validation')
+const Route = use('Route')
+const { generateErrors } = use('App/Helpers/validation')
 const Helpers = use('Helpers')
 const Database = use('Database')
 const Antl = use('Antl')
 const { unlink } = use('App/Helpers/files')
+let user
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 trait('Auth/Client')
 
-test('Create lot (fail) (bad request)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
+before(async () => {
+  user = await Factory.model('App/Models/User').create()
+})
 
-  const time = moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+test('Create lot (fail) (bad request)', async ({ assert, client }) => {
+  const time = moment().add(1, 'days').toISOString()
   const price = -12
-  const response = await client.post('/lots')
+  const response = await client.post(Route.url('lots'))
     .field({
       title: 'short',
       currentPrice: price,
       estimatedPrice: 'wrongData',
       startTime: time,
-      endTime: moment().format('YYYY-MM-DD HH:mm:ss')
+      endTime: moment().toISOString()
     })
     .accept('json')
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .end()
 
+  const failRules = [
+    'title.min:10', 'currentPrice.above:0', 'estimatedPrice.number',
+    `estimatedPrice.above:${price}`, `endTime.after:${time}`
+  ]
+
   response.assertStatus(400)
-  response.assertJSON([
-    {
-      field: 'title',
-      message: generateMessage('title', 'min:10').title,
-      validation: 'min'
-    },
-    {
-      field: 'currentPrice',
-      message: generateMessage('currentPrice', 'above:0').title,
-      validation: 'above'
-    },
-    {
-      field: 'estimatedPrice',
-      message: generateMessage('estimatedPrice', 'number').title,
-      validation: 'number'
-    },
-    {
-      field: 'estimatedPrice',
-      message: generateMessage('estimatedPrice', `above:${price}`).title,
-      validation: 'above'
-    },
-    {
-      field: 'endTime',
-      message: generateMessage('endTime', `after:${time}`).title,
-      validation: 'after'
-    }
-  ])
+  response.assertJSON(generateErrors(failRules))
 })
 
 test('Create lot (fail) (not auth)', async ({ assert, client }) => {
-  const response = await client.post('/lots')
+  const response = await client.post(Route.url('lots'))
     .accept('json')
     .end()
 
@@ -83,25 +59,16 @@ test('Create lot (fail) (not auth)', async ({ assert, client }) => {
 })
 
 test('Create lot (fail) (incorrect image)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const response = await client.post('/lots')
+  const response = await client.post(Route.url('lots'))
     .field({
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-      endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+      startTime: moment().toISOString(),
+      endTime: moment().add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/notImage.txt'))
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .end()
   response.assertStatus(400)
   response.assertJSON({
@@ -110,25 +77,16 @@ test('Create lot (fail) (incorrect image)', async ({ assert, client }) => {
 })
 
 test('Create lot (success)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const response = await client.post('/lots')
+  const response = await client.post(Route.url('lots'))
     .field({
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-      endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+      startTime: moment().toISOString(),
+      endTime: moment().add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/nature.jpg'))
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .end()
 
   const { image } = await Database.table('lots').last()

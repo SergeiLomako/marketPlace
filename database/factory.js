@@ -26,7 +26,7 @@ Factory.blueprint('App/Models/User', async (faker, i, data) => {
     firstname: faker.first(),
     lastname: faker.last(),
     restorePasswordToken: data.restoreToken || null,
-    email: faker.email({ domain: 'test.com' }),
+    email: data.email || `${randomInt(100, 10000)}${faker.email({ domain: 'test.com' })}`,
     phone: faker.phone({ formatted: false }),
     password: 'qwerty',
     confirmed: data.confirmed || false,
@@ -35,15 +35,15 @@ Factory.blueprint('App/Models/User', async (faker, i, data) => {
   }
 })
 
-Factory.blueprint('App/Models/Lot', async (faker) => {
+Factory.blueprint('App/Models/Lot', async (faker, i, data) => {
   return {
-    'user_id': randomInt(1, 5),
-    title: faker.paragraph({ sentences: 1 }),
-    status: statuses[randomInt(0, 1)],
-    currentPrice: faker.integer({ min: randomInt(10, 50), max: randomInt(50, 70) }),
-    estimatedPrice: faker.integer({ min: randomInt(80, 90), max: randomInt(120, 200) }),
-    startTime: Moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
-    endTime: Moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss')
+    'user_id': data.userId || randomInt(1, 5),
+    title: data.title || faker.paragraph({ sentences: 1 }),
+    status: data.status || statuses[randomInt(0, 1)],
+    currentPrice: data.currentPrice || faker.integer({ min: randomInt(10, 50), max: randomInt(50, 70) }),
+    estimatedPrice: data.estimatedPrice || faker.integer({ min: randomInt(80, 90), max: randomInt(120, 200) }),
+    startTime: data.startTime || Moment().add(1, 'days').toISOString(),
+    endTime: data.endTime || Moment().add(2, 'days').toISOString()
   }
 })
 

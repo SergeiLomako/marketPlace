@@ -44,7 +44,7 @@ class LotController {
 
   async show ({ response, params }) {
     try {
-      const lot = await Lot.findOrFail(+params.id)
+      const lot = await Lot.findOrFail(params.id)
       response.json(lot)
     } catch (err) {
       response.status(404).json({ message: Antl.formatMessage('messages.notFound') })
@@ -52,7 +52,7 @@ class LotController {
   }
 
   async update ({ request, response, auth, params }) {
-    const currentLot = await Lot.findOrFail(+params.id)
+    const currentLot = await Lot.findOrFail(params.id)
 
     const sanitizeRules = {
       title: 'strip_tags|trim',
@@ -112,7 +112,7 @@ class LotController {
 
   async destroy ({ response, params }) {
     try {
-      const currentLot = await Lot.findOrFail(+params.id)
+      const currentLot = await Lot.findOrFail(params.id)
       if (currentLot.image) {
         await unlink(`${imagePath}/${currentLot.image}`)
       }

@@ -2,7 +2,7 @@
 
 const Lot = use('App/Models/Lot')
 const Bid = use('App/Models/Bid')
-const beforeCreate = use('App/Helpers/bidCreating')
+const beforeCreateBid = use('App/Helpers/bidCreating')
 const Event = use('Event')
 const Antl = use('Antl')
 
@@ -18,9 +18,9 @@ class BidController {
 
   async store ({ request, response, params, auth }) {
     try {
-      const lot = await Lot.findOrFail(+params.id)
+      const lot = await Lot.findOrFail(params.id)
       const proposedPrice = request.input('proposedPrice')
-      const error = await beforeCreate(lot, auth.user.id, proposedPrice)
+      const error = await beforeCreateBid(lot, auth.user.id, proposedPrice)
       if (error) {
         return response.status(400).json({ message: error })
       }

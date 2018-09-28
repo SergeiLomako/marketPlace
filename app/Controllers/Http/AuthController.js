@@ -10,7 +10,7 @@ const randomString = require('random-string')
 class AuthController {
   async register ({ request, auth, response }) {
     const confirmationToken = randomString({ length: 40 })
-    const url = Env.get('APP_URL') + Route.url('confirm', { confirmationToken })
+    const url = `${Env.get('APP_URL')}${Route.url('confirm', { confirmationToken })}`
     const { email, password, firstname, lastname, phone, dob } = request.all()
     const user = await User.create({
       confirmationToken,

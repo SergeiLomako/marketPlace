@@ -1,93 +1,55 @@
 
-const { test, trait } = use('Test/Suite')('Bid Creating')
+const { test, trait, before } = use('Test/Suite')('Bid Creating')
 const User = use('App/Models/User')
 const Bid = use('App/Models/Bid')
 const Lot = use('App/Models/Lot')
+const Route = use('Route')
+const Factory = use('Factory')
 const moment = use('moment')
 const Env = use('Env')
-const { generateMessage } = use('App/Helpers/validation')
+const { generateErrors } = use('App/Helpers/validation')
 const Antl = use('Antl')
+let user
+let user1
+let lotInProcess
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 trait('Auth/Client')
 
+before(async () => {
+  user = await Factory.model('App/Models/User').create()
+  user1 = await Factory.model('App/Models/User').create()
+  lotInProcess = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'inProcess'
+  })
+})
+
 test('Create bid (fail) (bad request)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
+  const lot = await Factory.model('App/Models/Lot').create({ userId: user.id })
 
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.post(`/lots/${lot.id}/bids`)
+  const response = await client.post(Route.url('createBid', { id: lot.id }))
     .accept('json')
-    .loginVia(testUser1, 'jwt')
+    .loginVia(user1, 'jwt')
     .end()
 
   response.assertStatus(400)
-  response.assertJSON([{
-    field: 'proposedPrice',
-    message: generateMessage('proposedPrice', 'required').title,
-    validation: 'required'
-  }])
+  response.assertJSON(generateErrors(['proposedPrice.required']))
 })
 
 test('Create bid (fail) (lot is not status "inProcess")', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'closed'
   })
 
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    status: 'closed',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.post(`/lots/${lot.id}/bids`)
+  const response = await client.post(Route.url('createBid', { id: lot.id }))
     .accept('json')
     .field({
       proposedPrice: 170
     })
-    .loginVia(testUser1, 'jwt')
+    .loginVia(user1, 'jwt')
     .end()
 
   response.assertStatus(400)
@@ -95,59 +57,31 @@ test('Create bid (fail) (lot is not status "inProcess")', async ({ assert, clien
 })
 
 test('Create bid (fail) (user bid limit exceeded)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    status: 'inProcess',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
   const bids = [
     {
       proposedPrice: 110,
-      'user_id': testUser1.id,
-      'lot_id': lot.id
+      'user_id': user1.id,
+      'lot_id': lotInProcess.id
     },
     {
       proposedPrice: 120,
-      'user_id': testUser1.id,
-      'lot_id': lot.id
+      'user_id': user1.id,
+      'lot_id': lotInProcess.id
     },
     {
       proposedPrice: 130,
-      'user_id': testUser1.id,
-      'lot_id': lot.id
+      'user_id': user1.id,
+      'lot_id': lotInProcess.id
     }
   ]
 
   await Bid.createMany(bids)
 
-  const response = await client.post(`/lots/${lot.id}/bids`)
+  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
     .field({
       proposedPrice: 150
     })
-    .loginVia(testUser1, 'jwt')
+    .loginVia(user1, 'jwt')
     .accept('json')
     .end()
 
@@ -156,48 +90,20 @@ test('Create bid (fail) (user bid limit exceeded)', async ({ assert, client }) =
 })
 
 test('Create bid (fail) (bid price below current price)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    status: 'inProcess',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  await client.post(`/lots/${lot.id}/bids`)
+  await client.post(Route.url('createBid', { id: lotInProcess.id }))
     .field({
-      'lot_id': lot.id,
+      'lot_id': lotInProcess.id,
       proposedPrice: 150
     })
-    .loginVia(testUser1, 'jwt')
+    .loginVia(user1, 'jwt')
     .accept('json')
     .end()
 
-  const response = await client.post(`/lots/${lot.id}/bids`)
+  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
     .field({
       proposedPrice: 130
     })
-    .loginVia(testUser1, 'jwt')
+    .loginVia(user1, 'jwt')
     .accept('json')
     .end()
 
@@ -206,31 +112,12 @@ test('Create bid (fail) (bid price below current price)', async ({ assert, clien
 })
 
 test('Create bid (fail) (make a bid on the lot of the current user)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    status: 'inProcess',
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.post(`/lots/${lot.id}/bids`)
+  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
     .field({
-      'lot_id': lot.id,
+      'lot_id': lotInProcess.id,
       proposedPrice: 115
     })
-    .loginVia(testUser, 'jwt')
+    .loginVia(user, 'jwt')
     .accept('json')
     .end()
 
@@ -239,40 +126,12 @@ test('Create bid (fail) (make a bid on the lot of the current user)', async ({ a
 })
 
 test('Create bid (success)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    status: 'inProcess',
-    currentPrice: 100,
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.post(`/lots/${lot.id}/bids`)
+  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
     .field({
-      'lot_id': lot.id,
+      'lot_id': lotInProcess.id,
       proposedPrice: 115
     })
-    .loginVia(testUser1, 'jwt')
+    .loginVia(user1, 'jwt')
     .accept('json')
     .end()
 
