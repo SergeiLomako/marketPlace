@@ -7,13 +7,15 @@ const Event = use('Event')
 const Antl = use('Antl')
 
 class BidController {
-  async index ({ params, response }) {
+  async index ({ params, response, auth }) {
     const bids = await Bid.query().paginate(1, 5)
-    console.log(bids.toJSON())
-  }
+    bids.data.foreEach(bid => {
+      bid['user_id'] = bid['user_id'] === auth.user.id
+        ? Antl.formatMessage('messages.you')
+        : `${Antl.formatMessage('messages.customer')} # ${bid.id}`
+    })
 
-  async show ({ params }) {
-
+    console.log()
   }
 
   async store ({ request, response, params, auth }) {

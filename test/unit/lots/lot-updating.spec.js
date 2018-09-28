@@ -1,7 +1,8 @@
 'use strict'
 
-const { test, trait, before } = use('Test/Suite')('Lot updating')
-const moment = use('moment')
+const { test, trait, before, after } = use('Test/Suite')('Lot updating')
+const now = use('moment')()
+const Database = use('Database')
 const Factory = use('Factory')
 const Route = use('Route')
 const Env = use('Env')
@@ -21,21 +22,26 @@ before(async () => {
   user1 = await Factory.model('App/Models/User').create()
 })
 
+after(async () => {
+  await Database.from('users')
+    .whereIn('id', [user.id, user1.id])
+    .delete()
+})
+
 test('Update lot (fail) (bad request)', async ({ assert, client }) => {
   const lot = await Factory.model('App/Models/Lot').create({
     userId: user.id,
     status: 'pending'
   })
 
-  const time = moment().add(1, 'days').toISOString()
   const price = -12
   const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
       title: 'short',
       currentPrice: price,
       estimatedPrice: 'wrongData',
-      startTime: time,
-      endTime: moment().toISOString()
+      endTime: now.toISOString(),
+      startTime: now.add(1, 'days').toISOString()
     })
     .accept('json')
     .loginVia(user, 'jwt')
@@ -43,7 +49,7 @@ test('Update lot (fail) (bad request)', async ({ assert, client }) => {
 
   const failRules = [
     'title.min:10', 'currentPrice.above:0', 'estimatedPrice.number',
-    `estimatedPrice.above:${price}`, `endTime.after:${time}`
+    `estimatedPrice.above:${price}`, `endTime.after:${now.toISOString()}`
   ]
 
   response.assertStatus(400)
@@ -75,8 +81,8 @@ test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().toISOString(),
-      endTime: moment().add(1, 'days').toISOString()
+      startTime: now.toISOString(),
+      endTime: now.add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/notImage.txt'))
     .loginVia(user, 'jwt')
@@ -129,8 +135,8 @@ test('Update lot (success)', async ({ assert, client }) => {
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().toISOString(),
-      endTime: moment().add(1, 'days').toISOString()
+      startTime: now.toISOString(),
+      endTime: now.add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/nature.jpg'))
     .loginVia(user, 'jwt')

@@ -1,10 +1,10 @@
 'use strict'
 
-const { test, trait, before } = use('Test/Suite')('Lot deleting')
+const { test, trait, before, after } = use('Test/Suite')('Lot deleting')
 const Factory = use('Factory')
 const Route = use('Route')
 const Antl = use('Antl')
-const moment = use('moment')
+const now = use('moment')()
 const Helpers = use('Helpers')
 const Database = use('Database')
 let user
@@ -17,6 +17,12 @@ trait('Auth/Client')
 before(async () => {
   user = await Factory.model('App/Models/User').create()
   user1 = await Factory.model('App/Models/User').create()
+})
+
+after(async () => {
+  await Database.from('users')
+    .whereIn('id', [user.id, user1.id])
+    .delete()
 })
 
 test('Delete lot (fail) (not auth)', async ({ assert, client }) => {
@@ -69,8 +75,8 @@ test('Delete lot (success)', async ({ assert, client }) => {
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().toISOString(),
-      endTime: moment().add(1, 'days').toISOString()
+      startTime: now.toISOString(),
+      endTime: now.add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/nature.jpg'))
     .loginVia(user, 'jwt')

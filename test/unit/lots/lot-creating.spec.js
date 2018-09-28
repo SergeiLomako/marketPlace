@@ -1,9 +1,9 @@
 'use strict'
 
-const { test, trait, before } = use('Test/Suite')('Lot creating')
+const { test, trait, before, after } = use('Test/Suite')('Lot creating')
 const Env = use('Env')
 const Factory = use('Factory')
-const moment = use('moment')
+const now = use('moment')()
 const Route = use('Route')
 const { generateErrors } = use('App/Helpers/validation')
 const Helpers = use('Helpers')
@@ -20,16 +20,21 @@ before(async () => {
   user = await Factory.model('App/Models/User').create()
 })
 
+after(async () => {
+  await Database.from('users')
+    .where('id', user.id)
+    .delete()
+})
+
 test('Create lot (fail) (bad request)', async ({ assert, client }) => {
-  const time = moment().add(1, 'days').toISOString()
   const price = -12
   const response = await client.post(Route.url('lots'))
     .field({
       title: 'short',
       currentPrice: price,
       estimatedPrice: 'wrongData',
-      startTime: time,
-      endTime: moment().toISOString()
+      endTime: now.toISOString(),
+      startTime: now.add(1, 'days').toISOString()
     })
     .accept('json')
     .loginVia(user, 'jwt')
@@ -37,7 +42,7 @@ test('Create lot (fail) (bad request)', async ({ assert, client }) => {
 
   const failRules = [
     'title.min:10', 'currentPrice.above:0', 'estimatedPrice.number',
-    `estimatedPrice.above:${price}`, `endTime.after:${time}`
+    `estimatedPrice.above:${price}`, `endTime.after:${now.toISOString()}`
   ]
 
   response.assertStatus(400)
@@ -64,8 +69,8 @@ test('Create lot (fail) (incorrect image)', async ({ assert, client }) => {
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().toISOString(),
-      endTime: moment().add(1, 'days').toISOString()
+      startTime: now.toISOString(),
+      endTime: now.add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/notImage.txt'))
     .loginVia(user, 'jwt')
@@ -82,8 +87,8 @@ test('Create lot (success)', async ({ assert, client }) => {
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: moment().toISOString(),
-      endTime: moment().add(1, 'days').toISOString()
+      startTime: now.toISOString(),
+      endTime: now.add(1, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/nature.jpg'))
     .loginVia(user, 'jwt')

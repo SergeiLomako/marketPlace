@@ -21,5 +21,7 @@
   "bellowCurrentPrice": "Bid price below current price",
   "notBetYourLot": "Can not bet on your lot",
   "bidCreated": "Bid created",
-  "notInProcess": "Lot must be only inProcess status"
+  "notInProcess": "Lot must be only inProcess status",
+  "you": "You",
+  "customer": "Customer"
 }

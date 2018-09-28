@@ -1,11 +1,12 @@
 'use strict'
 
-const { test, trait, before } = use('Test/Suite')('Lot showing')
+const { test, trait, before, after } = use('Test/Suite')('Lot showing')
 const Factory = use('Factory')
+const Database = use('Database')
 const Route = use('Route')
 const Antl = use('Antl')
 const Env = use('Env')
-const moment = use('moment')
+const now = use('moment')()
 let user
 let user1
 
@@ -16,6 +17,12 @@ trait('Auth/Client')
 before(async () => {
   user = await Factory.model('App/Models/User').create()
   user1 = await Factory.model('App/Models/User').create()
+})
+
+after(async () => {
+  await Database.from('users')
+    .whereIn('id', [user.id, user1.id])
+    .delete()
 })
 
 test('Show lots (fail) (not auth)', async ({ assert, client }) => {
@@ -49,8 +56,8 @@ test('Show single lot (fail) (auth user not author and status is not "inProcess"
 
 test('Show single lot (success)', async ({ assert, client }) => {
   const format = Env.get('DATE_FORMAT')
-  const startTime = moment()
-  const endTime = moment().add(1, 'days')
+  const startTime = now
+  const endTime = now.add(1, 'days')
   const lot = await Factory.model('App/Models/Lot').create({
     userId: user.id,
     status: 'pending',

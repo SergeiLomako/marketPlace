@@ -1,11 +1,9 @@
 
-const { test, trait, before } = use('Test/Suite')('Bid Creating')
-const User = use('App/Models/User')
+const { test, trait, before, after } = use('Test/Suite')('Bid Creating')
 const Bid = use('App/Models/Bid')
-const Lot = use('App/Models/Lot')
 const Route = use('Route')
+const Database = use('Database')
 const Factory = use('Factory')
-const moment = use('moment')
 const Env = use('Env')
 const { generateErrors } = use('App/Helpers/validation')
 const Antl = use('Antl')
@@ -24,6 +22,16 @@ before(async () => {
     userId: user.id,
     status: 'inProcess'
   })
+})
+
+after(async () => {
+  await Database.from('lots')
+    .where('id', lotInProcess.id)
+    .delete()
+
+  await Database.from('users')
+    .whereIn('id', [user.id, user1.id])
+    .delete()
 })
 
 test('Create bid (fail) (bad request)', async ({ assert, client }) => {
