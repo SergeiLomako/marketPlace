@@ -19,6 +19,8 @@ before(async () => {
   user = await Factory.model('App/Models/User').create()
   user1 = await Factory.model('App/Models/User').create()
   lotInProcess = await Factory.model('App/Models/Lot').create({
+    currentPrice: 100,
+    estimatedPrice: 200,
     userId: user.id,
     status: 'inProcess'
   })
