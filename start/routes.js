@@ -73,6 +73,14 @@ Route
 
     Route.get('/:id/bids/:bidId', 'BidController.show')
       .as('showBid')
+
+    Route.get('/:id/order', 'OrderController.showForm')
+      .middleware(['checkWinner'])
+      .as('createOrderForm')
+
+    Route.post('/:id/order', 'OrderController.store')
+      .middleware(['checkWinner'])
+      .as('createOrder')
   })
   .prefix('lots')
   .middleware(['auth'])

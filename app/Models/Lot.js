@@ -16,6 +16,7 @@ class Lot extends Model {
 
   bids () {
     return this.hasMany('App/Models/Bid')
+      .orderBy('created_at', 'desc')
   }
 
   user () {

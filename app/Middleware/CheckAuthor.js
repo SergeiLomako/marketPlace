@@ -5,11 +5,15 @@ const Antl = use('Antl')
 
 class CheckAuthor {
   async handle ({ request, auth, params, response }, next) {
-    const lot = await Lot.find(params.id)
-    if (lot && lot['user_id'] !== auth.user.id) {
-      return response.status(403).json({ message: Antl.formatMessage('messages.accessDenied') })
+    try {
+      const lot = await Lot.findOrFail(params.id)
+      if (lot['user_id'] !== auth.user.id) {
+        return response.status(403).json({ message: Antl.formatMessage('messages.accessDenied') })
+      }
+      await next()
+    } catch ({ message }){
+      return response.status(400).json({ message: message })
     }
-    await next()
   }
 }
 

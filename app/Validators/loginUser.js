@@ -1,9 +1,5 @@
 'use strict'
 
-const rules = {
-  email: 'required|email',
-  password: 'required'
-}
 const { createMessagesObj } = use('App/Helpers/validation')
 
 class loginUser {
@@ -19,11 +15,14 @@ class loginUser {
   }
 
   get rules () {
-    return rules
+    return {
+      email: 'required|email',
+      password: 'required'
+    }
   }
 
   get messages () {
-    return createMessagesObj(rules)
+    return createMessagesObj(this.rules)
   }
 }
 

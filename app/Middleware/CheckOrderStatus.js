@@ -1,13 +1,13 @@
 'use strict'
 
-const Lot = use('App/Models/Lot')
+const Order = use('App/Models/Order')
 const Antl = use('Antl')
 
-class CheckStatus {
+class CheckOrderStatus {
   async handle ({ request, response, params, auth }, next) {
     try {
-      const lot = await Lot.findOrFail(params.id)
-      if (lot.status !== 'pending') {
+      const order = await Order.findOrFail(params.id)
+      if (order.status !== 'pending') {
         return response.status(403).json({ message: Antl.formatMessage('messages.notPending') })
       }
       await next()
@@ -17,4 +17,4 @@ class CheckStatus {
   }
 }
 
-module.exports = CheckStatus
+module.exports = CheckOrderStatus

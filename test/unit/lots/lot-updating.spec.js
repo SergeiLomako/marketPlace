@@ -2,6 +2,7 @@
 
 const { test, trait, before, after } = use('Test/Suite')('Lot updating')
 const now = use('moment')()
+const Antl = use('Antl')
 const Database = use('Database')
 const Factory = use('Factory')
 const Route = use('Route')
@@ -88,9 +89,7 @@ test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
     .loginVia(user, 'jwt')
     .end()
   response.assertStatus(400)
-  response.assertJSON({
-    message: 'Invalid file type plain or text. Only image is allowed'
-  })
+  response.assertJSON({ message: 'Invalid file type plain or text. Only image is allowed' })
 })
 
 test('Update lot (fail) (not author)', async ({ assert, client }) => {
@@ -119,9 +118,7 @@ test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
     .loginVia(user, 'jwt')
     .end()
   response.assertStatus(403)
-  response.assertJSON({
-    message: 'Lot is not in the pending status'
-  })
+  response.assertJSON({ message: Antl.formatMessage('messages.notPending') })
 })
 
 test('Update lot (success)', async ({ assert, client }) => {
@@ -146,7 +143,5 @@ test('Update lot (success)', async ({ assert, client }) => {
   const path = Helpers.publicPath(`${Env.get('IMAGE_FOLDER')}/${image}`)
   await unlink(path)
   response.assertStatus(200)
-  response.assertJSON({
-    message: 'Lot updated'
-  })
+  response.assertJSON({ message: Antl.formatMessage('messages.lotUpdated') })
 })

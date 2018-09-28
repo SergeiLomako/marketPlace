@@ -1,9 +1,5 @@
 'use strict'
 
-const rules = {
-  password: 'required|min:6|max:30|confirmed',
-  restoreToken: 'required'
-}
 const { createMessagesObj } = use('App/Helpers/validation')
 
 class changePassword {
@@ -12,11 +8,14 @@ class changePassword {
   }
 
   get rules () {
-    return rules
+    return {
+      password: 'required|min:6|max:30|confirmed',
+      restoreToken: 'required'
+    }
   }
 
   get messages () {
-    return createMessagesObj(rules)
+    return createMessagesObj(this.rules)
   }
 }
 
