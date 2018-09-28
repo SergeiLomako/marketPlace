@@ -1,21 +1,27 @@
 'use strict'
 
 const Lot = use('App/Models/Lot')
+const Env = use('Env')
 const Bid = use('App/Models/Bid')
 const beforeCreateBid = use('App/Helpers/bidCreating')
 const Event = use('Event')
 const Antl = use('Antl')
 
 class BidController {
-  async index ({ params, response, auth }) {
-    const bids = await Bid.query().paginate(1, 5)
-    bids.data.foreEach(bid => {
-      bid['user_id'] = bid['user_id'] === auth.user.id
+  async index ({ params, request, response, auth }) {
+    const userId = auth.user.id
+    const bids = await Bid.getCurrentLotList(
+      params.id,
+      request.input('page', 1),
+      Env.get('BIDS_PAGINATE')
+    )
+    bids.rows.forEach(bid => {
+      bid['user_id'] = bid['user_id'] === userId
         ? Antl.formatMessage('messages.you')
-        : `${Antl.formatMessage('messages.customer')} # ${bid.id}`
+        : `${Antl.formatMessage('messages.customer')} #${bid.id}`
     })
 
-    console.log()
+    response.json(bids)
   }
 
   async store ({ request, response, params, auth }) {
@@ -26,7 +32,7 @@ class BidController {
       if (error) {
         return response.status(400).json({ message: error })
       }
-      await Bid.create({
+      const bid = await Bid.create({
         'user_id': auth.user.id,
         'lot_id': lot.id,
         proposedPrice
@@ -35,8 +41,9 @@ class BidController {
       lot.currentPrice = proposedPrice
       await lot.save()
 
-      // Event.fire('changeLotPrice', { lot, bid })
-
+      if (lot.currentPrice >= lot.estimatedPrice) {
+        Event.fire('closedLot', { lot, bid })
+      }
       response.json({ message: Antl.formatMessage('messages.bidCreated') })
     } catch ({ message }) {
       response.status(500).json({ message: message })
