@@ -70,7 +70,7 @@ test('Delete lot (fail) (status not "pending")', async ({ assert, client }) => {
 })
 
 test('Delete lot (success)', async ({ assert, client }) => {
-  await client.post('/lots')
+  await client.post(Route.url('lots'))
     .field({
       title: 'Testing title',
       currentPrice: 100,

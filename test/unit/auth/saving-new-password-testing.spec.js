@@ -28,7 +28,7 @@ test('check saving new password (success)', async ({ assert, client }) => {
   const restoreToken = 'restorePasswordToken'
   const user = await Factory.model('App/Models/User')
     .create({ confirmationToken, restoreToken })
-  const response = await client.put('/saveNewPassword')
+  const response = await client.put(Route.url('saveNewPassword'))
     .accept('json')
     .field({
       password: 'qwerty',

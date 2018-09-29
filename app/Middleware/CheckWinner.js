@@ -9,9 +9,13 @@ class CheckWinner {
       const winner = await Database.select('bids.*')
         .from('lots')
         .innerJoin('bids', 'lots.id', 'bids.lot_id')
-        .where('lots.id', 3)
+        .where('lots.id', params.id)
+        .where('lots.status', 'closed')
         .orderBy('bids.proposedPrice', 'desc')
         .first()
+      if (!winner) {
+        return response.status(400).json({ message: Antl.formatMessage('messages.lotNotClosed') })
+      }
 
       if (winner['user_id'] !== auth.user.id) {
         return response.status(403).json({ message: Antl.formatMessage('messages.notWinner') })

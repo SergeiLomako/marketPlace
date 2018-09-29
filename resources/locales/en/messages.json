@@ -15,6 +15,7 @@
   "priceUpdated": "Estimated price updated",
   "priceUpdatedLotClosed": "Estimated price updated and lot closed",
   "lotDeleted": "Lot deleted",
+  "lotNotClosed": "Lot is not closed",
   "accessDenied": "Access denied",
   "notPending": "Not in the pending status",
   "bidLimitOver": "Bid limit for this lot is over ( max: {count})",

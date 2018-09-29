@@ -1,18 +1,5 @@
 'use strict'
 
-/*
-|--------------------------------------------------------------------------
-| Routes
-|--------------------------------------------------------------------------
-|
-| Http routes are entry points to your web application. You can create
-| routes for different URL's and bind Controller actions to them.
-|
-| A complete guide on routing is available here.
-| http://adonisjs.com/docs/4.0/routing
-|
-*/
-
 const Route = use('Route')
 const Antl = use('Antl')
 
@@ -20,27 +7,27 @@ Route.get('/', () => {
   return { greeting: 'Hello world in JSON' }
 })
 
-Route.post('/register', 'AuthController.register')
+Route.post('api/register', 'AuthController.register')
   .validator('storeUser')
   .as('register')
 
-Route.get('/register/confirm/:confirmationToken', 'AuthController.confirmEmail')
+Route.get('api/register/confirm/:confirmationToken', 'AuthController.confirmEmail')
   .as('confirm')
 
-Route.get('/checkAuth', 'AuthController.checkAuth')
+Route.get('api/checkAuth', 'AuthController.checkAuth')
   .as('checkAuth')
 
-Route.post('/login', 'AuthController.login')
+Route.post('api/login', 'AuthController.login')
   .validator('loginUser')
   .as('login')
 
-Route.put('/sendRestorePassword', 'AuthController.sendRestorePasswordEmail')
+Route.put('api/sendRestorePassword', 'AuthController.sendRestorePasswordEmail')
   .as('sendRestorePassword')
 
-Route.get('/restorePasswordForm/:restoreToken', 'AuthController.showRestorePasswordForm')
+Route.get('api/restorePasswordForm/:restoreToken', 'AuthController.showRestorePasswordForm')
   .as('restoreEmail')
 
-Route.put('/saveNewPassword', 'AuthController.saveNewPassword')
+Route.put('api/saveNewPassword', 'AuthController.saveNewPassword')
   .validator('changePassword')
   .as('saveNewPassword')
 
@@ -89,5 +76,5 @@ Route
       .middleware(['checkWinner', 'checkOrderStatus'])
       .as('updateOrder')
   })
-  .prefix('lots')
+  .prefix('api/lots')
   .middleware(['auth'])
