@@ -9,21 +9,25 @@ const randomString = require('random-string')
 
 class AuthController {
   async register ({ request, auth, response }) {
-    const confirmationToken = randomString({ length: 40 })
-    const url = `${Env.get('APP_URL')}${Route.url('confirm', { confirmationToken })}`
-    const { email, password, firstname, lastname, phone, dob } = request.all()
-    const user = await User.create({
-      confirmationToken,
-      firstname,
-      lastname,
-      password,
-      phone,
-      email,
-      dob
-    })
+    try {
+      const confirmationToken = randomString({ length: 40 })
+      const url = `${Env.get('APP_URL')}${Route.url('confirm', { confirmationToken })}`
+      const { email, password, firstname, lastname, phone, dob } = request.all()
+      const user = await User.create({
+        confirmationToken,
+        firstname,
+        lastname,
+        password,
+        phone,
+        email,
+        dob
+      })
 
-    Event.fire('new::user', { user, url, password })
-    response.status(201).json({ message: Antl.formatMessage('messages.userCreated') })
+      Event.fire('new::user', { user, url, password })
+      response.status(201).json({ message: Antl.formatMessage('messages.userCreated') })
+    } catch ({ message }) {
+      response.status(400).json({ message })
+    }
   }
 
   async confirmEmail ({ params, response }) {

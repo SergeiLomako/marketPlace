@@ -24,5 +24,7 @@
   "notInProcess": "Lot must be only inProcess status",
   "you": "You",
   "customer": "Customer",
-  "notWinner": "You aren't winner"
+  "notWinner": "You aren't winner",
+  "orderCreated": "Order created",
+  "orderUpdated": "Order updated"
 }

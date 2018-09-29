@@ -14,7 +14,11 @@
 const Factory = use('Factory')
 const Moment = use('moment')
 const statuses = ['pending', 'inProcess']
-
+const orderStatuses = ['pending', 'sent', 'delivered']
+const orderTypes = [
+  'pickup', 'Royal Mail', 'DHL Express',
+  'United States Postal Service'
+]
 function randomInt (min, max) {
   let rand = min - 0.5 + Math.random() * (max - min + 1)
   rand = Math.round(rand)
@@ -47,10 +51,19 @@ Factory.blueprint('App/Models/Lot', async (faker, i, data) => {
   }
 })
 
-Factory.blueprint('App/Models/Bid', async () => {
+Factory.blueprint('App/Models/Bid', async (faker, i, data) => {
   return {
-    'user_id': randomInt(1, 5),
-    'lot_id': randomInt(1, 5),
-    proposedPrice: randomInt(50, 80)
+    'user_id': data.userId || randomInt(1, 5),
+    'lot_id': data.lotId || randomInt(1, 5),
+    proposedPrice: data.proposedPrice || randomInt(50, 80)
+  }
+})
+
+Factory.blueprint('App/Models/Order', async (faker, i, data) => {
+  return {
+    'bid_id': data.bidId || randomInt(1, 5),
+    status: data.status || orderStatuses[randomInt(0, 2)],
+    type: data.type || orderTypes[randomInt(0, 3)],
+    arrivalLocation: faker.paragraph({ sentences: 1 })
   }
 })

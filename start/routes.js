@@ -14,6 +14,7 @@
 */
 
 const Route = use('Route')
+const Antl = use('Antl')
 
 Route.get('/', () => {
   return { greeting: 'Hello world in JSON' }
@@ -74,13 +75,19 @@ Route
     Route.get('/:id/bids/:bidId', 'BidController.show')
       .as('showBid')
 
-    Route.get('/:id/order', 'OrderController.showForm')
+    Route.get('/:id/order', ({ response }) => {
+      return response.json({ message: Antl.formatMessage('messages.imagineForm') })
+    })
       .middleware(['checkWinner'])
       .as('createOrderForm')
 
     Route.post('/:id/order', 'OrderController.store')
       .middleware(['checkWinner'])
       .as('createOrder')
+
+    Route.put('/:id/order', 'OrderController.update')
+      .middleware(['checkWinner', 'checkOrderStatus'])
+      .as('updateOrder')
   })
   .prefix('lots')
   .middleware(['auth'])

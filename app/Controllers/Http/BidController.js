@@ -2,7 +2,6 @@
 
 const Lot = use('App/Models/Lot')
 const Env = use('Env')
-const Database = use('Database')
 const Bid = use('App/Models/Bid')
 const beforeCreateBid = use('App/Helpers/bidCreating')
 const Event = use('Event')
@@ -10,19 +9,23 @@ const Antl = use('Antl')
 
 class BidController {
   async index ({ params, request, response, auth }) {
-    const userId = auth.user.id
-    const bids = await Bid.getCurrentLotList(
-      params.id,
-      request.input('page', 1),
-      Env.get('BIDS_PAGINATE')
-    )
-    bids.rows.forEach(bid => {
-      bid['user_id'] = bid['user_id'] === userId
-        ? Antl.formatMessage('messages.you')
-        : `${Antl.formatMessage('messages.customer')} #${bid.id}`
-    })
+    try {
+      const userId = auth.user.id
+      const bids = await Bid.getCurrentLotList(
+        params.id,
+        request.input('page', 1),
+        Env.get('BIDS_PAGINATE')
+      )
+      bids.rows.forEach(bid => {
+        bid['user_id'] = bid['user_id'] === userId
+          ? Antl.formatMessage('messages.you')
+          : `${Antl.formatMessage('messages.customer')} #${bid.id}`
+      })
 
-    response.json(bids)
+      response.json(bids)
+    } catch ({ message }) {
+      response.status(500).json({ message })
+    }
   }
 
   async store ({ request, response, params, auth }) {
@@ -33,7 +36,7 @@ class BidController {
       if (error) {
         return response.status(400).json({ message: error })
       }
-      const bid = await Bid.create({
+      await Bid.create({
         'user_id': auth.user.id,
         'lot_id': lot.id,
         proposedPrice
@@ -47,7 +50,7 @@ class BidController {
       }
       response.json({ message: Antl.formatMessage('messages.bidCreated') })
     } catch ({ message }) {
-      response.status(500).json({ message: message })
+      response.status(500).json({ message })
     }
   }
 }

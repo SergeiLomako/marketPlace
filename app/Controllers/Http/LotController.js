@@ -15,8 +15,8 @@ class LotController {
     try {
       const lots = await Lot.getList(request, auth.user.id)
       response.json(lots)
-    } catch (err) {
-      response.status(500).json({ message: Antl.formatMessage('messages.databaseError') })
+    } catch ({ message }) {
+      response.status(500).json({ message })
     }
   }
 
@@ -35,9 +35,9 @@ class LotController {
       response.status(201).json({ message: Antl.formatMessage('messages.lotCreated') })
     } catch ({ name, message }) {
       if (name === 'Error') {
-        response.status(400).json({ message: message })
+        response.status(400).json({ message })
       } else {
-        response.status(500).json({ message: message })
+        response.status(500).json({ message })
       }
     }
   }
@@ -46,62 +46,62 @@ class LotController {
     try {
       const lot = await Lot.findOrFail(params.id)
       response.json(lot)
-    } catch (err) {
-      response.status(404).json({ message: Antl.formatMessage('messages.notFound') })
+    } catch ({ message }) {
+      response.status(404).json({ message })
     }
   }
 
   async update ({ request, response, auth, params }) {
-    const currentLot = await Lot.findOrFail(params.id)
-
-    const sanitizeRules = {
-      title: 'strip_tags|trim',
-      description: 'strip_tags|trim',
-      currentPrice: 'to_int',
-      estimatedPrice: 'to_int'
-    }
-
-    const requestData = request.only([
-      'estimatedPrice',
-      'currentPrice',
-      'description',
-      'startTime',
-      'endTime',
-      'title',
-      'image'
-    ])
-    const data = sanitize(requestData, sanitizeRules)
-    const price = request.input('currentPrice') || currentLot.currentPrice
-    const time = request.input('startTime') || currentLot.startTime
-    if (request._files.image) {
-      const oldImage = currentLot.image
-      const title = data.title || currentLot.title
-      const uploadResult = await upload(request, 'image', imagePath, title)
-      if (typeof uploadResult === 'object') {
-        return response.status(400).json({ message: uploadResult.message })
-      }
-      if (oldImage) {
-        await unlink(`${imagePath}/${currentLot.image}`)
-      }
-
-      data.image = uploadResult
-    }
-    const rules = {
-      title: 'string|min:10|max:200',
-      description: 'string|min:10|max:300',
-      currentPrice: 'number|above:0',
-      estimatedPrice: `number|above:${price}`,
-      startTime: `date|after:${moment().format('YYYY-MM-DD HH:mm:ss')}`,
-      endTime: `date|after:${time}`
-    }
-
-    const messages = createMessagesObj(rules)
-    const validation = await validateAll(data, rules, messages)
-    if (validation.fails()) {
-      return response.status(400).json(validation.messages())
-    }
-
     try {
+      const currentLot = await Lot.findOrFail(params.id)
+
+      const sanitizeRules = {
+        title: 'strip_tags|trim',
+        description: 'strip_tags|trim',
+        currentPrice: 'to_int',
+        estimatedPrice: 'to_int'
+      }
+
+      const requestData = request.only([
+        'estimatedPrice',
+        'currentPrice',
+        'description',
+        'startTime',
+        'endTime',
+        'title',
+        'image'
+      ])
+      const data = sanitize(requestData, sanitizeRules)
+      const price = request.input('currentPrice', currentLot.currentPrice)
+      const time = request.input('startTime', currentLot.startTime)
+      if (request._files.image) {
+        const oldImage = currentLot.image
+        const title = data.title || currentLot.title
+        const uploadResult = await upload(request, 'image', imagePath, title)
+        if (typeof uploadResult === 'object') {
+          return response.status(400).json({ message: uploadResult.message })
+        }
+        if (oldImage) {
+          await unlink(`${imagePath}/${currentLot.image}`)
+        }
+
+        data.image = uploadResult
+      }
+      const rules = {
+        title: 'string|min:10|max:200',
+        description: 'string|min:10|max:300',
+        currentPrice: 'number|above:0',
+        estimatedPrice: `number|above:${price}`,
+        startTime: `date|after:${moment().format('YYYY-MM-DD HH:mm:ss')}`,
+        endTime: `date|after:${time}`
+      }
+
+      const messages = createMessagesObj(rules)
+      const validation = await validateAll(data, rules, messages)
+      if (validation.fails()) {
+        return response.status(400).json(validation.messages())
+      }
+
       currentLot.merge(data)
       await currentLot.save()
       response.json({ message: Antl.formatMessage('messages.lotUpdated') })
