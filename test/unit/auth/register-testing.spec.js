@@ -17,8 +17,8 @@ test('check register', async ({ assert, client }) => {
       email: 'johnDoe@testing.com',
       password: 'qwerty',
       phone: '777777777777',
-      firstname: 'John',
-      lastname: 'Doe',
+      firstName: 'John',
+      lastName: 'Doe',
       dob: '1980-01-01',
       confirmationToken: 'sdfdsfjkjskflksdfsd'
     })

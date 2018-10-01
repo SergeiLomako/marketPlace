@@ -11,13 +11,13 @@ test('check validator register (fail)', async ({ assert }) => {
   const fakeData = {
     email: 'fake email',
     phone: 4564564565464554545454544544545,
-    firstname: 'i',
+    firstName: 'i',
     password: 'test',
     dob: 'testDate'
   }
 
   const failRules = [
-    'email.email', 'phone.max:20', 'firstname.min:2', 'lastname.required',
+    'email.email', 'phone.max:20', 'firstName.min:2', 'lastName.required',
     'password.min:6', 'dob.date', 'dob.beforeOffsetOf:21'
   ]
 
@@ -31,8 +31,8 @@ test('check validator register (success)', async ({ assert }) => {
   const correctData = {
     email: 'johndoe@testhosting.com',
     phone: '06606060707',
-    firstname: 'John',
-    lastname: 'Doe',
+    firstName: 'John',
+    lastName: 'Doe',
     password: 'qwerty',
     dob: '1980-02-20'
   }

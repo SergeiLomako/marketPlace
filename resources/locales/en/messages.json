@@ -24,6 +24,7 @@
   "bidCreated": "Bid created",
   "notInProcess": "Lot must be only inProcess status",
   "you": "You",
+  "badRequest": "Bad Request",
   "customer": "Customer",
   "notWinner": "You aren't winner",
   "orderCreated": "Order created",

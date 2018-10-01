@@ -14,8 +14,8 @@ test('check confirm email (fail)', async ({ assert, client }) => {
     .accept('json')
     .end()
 
-  response.assertStatus(404)
-  response.assertJSON({ message: Antl.formatMessage('messages.userNotFound') })
+  response.assertStatus(400)
+  response.assertJSON({ message: Antl.formatMessage('messages.badRequest') })
 })
 
 test('check confirm email (success)', async ({ assert, client }) => {

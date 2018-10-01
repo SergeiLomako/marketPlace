@@ -10,8 +10,8 @@ class StoreUser {
   get sanitizationRules () {
     return {
       email: 'normalize_email|trim',
-      firstname: 'strip_tags|trim',
-      lastname: 'strip_tags|trim',
+      firstName: 'strip_tags|trim',
+      lastName: 'strip_tags|trim',
       phone: 'strip_tags|trim'
     }
   }
@@ -20,8 +20,8 @@ class StoreUser {
     return {
       email: 'required|email|unique:users',
       phone: 'required|max:20|unique:users',
-      firstname: 'required|string|min:2|max:20',
-      lastname: 'required|string|min:2|max:30',
+      firstName: 'required|string|min:2|max:20',
+      lastName: 'required|string|min:2|max:30',
       password: 'required|min:6|max:30',
       dob: 'required|date|beforeOffsetOf:21,years'
     }

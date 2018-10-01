@@ -46,6 +46,7 @@ Route
 
     Route.put('/:id', 'LotController.update')
       .middleware(['checkStatus', 'checkAuthor'])
+      .validator('updateLot')
       .as('updateLot')
 
     Route.delete('/:id', 'LotController.destroy')

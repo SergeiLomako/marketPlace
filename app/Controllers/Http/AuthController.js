@@ -12,11 +12,11 @@ class AuthController {
     try {
       const confirmationToken = randomString({ length: 40 })
       const url = `${Env.get('APP_URL')}${Route.url('confirm', { confirmationToken })}`
-      const { email, password, firstname, lastname, phone, dob } = request.all()
+      const { email, password, firstName, lastName, phone, dob } = request.all()
       const user = await User.create({
         confirmationToken,
-        firstname,
-        lastname,
+        firstName,
+        lastName,
         password,
         phone,
         email,
@@ -25,9 +25,7 @@ class AuthController {
 
       Event.fire('new::user', { user, url, password })
       response.status(201).json({ message: Antl.formatMessage('messages.userCreated') })
-    } catch ({ message }) {
-      response.status(400).json({ message })
-    }
+    } catch (err) { response.status(400).json({ message: Antl.formatMessage('messages.badRequest') }) }
   }
 
   async confirmEmail ({ params, response }) {
@@ -38,9 +36,7 @@ class AuthController {
       await user.save()
 
       response.json({ message: Antl.formatMessage('messages.accountActivated') })
-    } catch ({ message }) {
-      response.status(400).json({ message })
-    }
+    } catch (err) { response.status(400).json({ message: Antl.formatMessage('messages.badRequest') }) }
   }
 
   async login ({ request, auth, response }) {
@@ -50,16 +46,14 @@ class AuthController {
       const { token } = await auth.attempt(email, password)
       response.header('Authorization', `Bearer ${token}`)
       response.json({ message: Antl.formatMessage('messages.loginOk') })
-    } catch ({ message }) { response.status(403).json({ message }) }
+    } catch (err) { response.status(400).json({ message: Antl.formatMessage('messages.badRequest') }) }
   }
 
   async showRestorePasswordForm ({ request, response, params }) {
     try {
       await User.findBy('restorePasswordToken', params.restoreToken)
       response.json({ message: Antl.formatMessage('messages.imagineForm') })
-    } catch ({ message }) {
-      response.status(400).json({ message })
-    }
+    } catch (err) { response.status(400).json({ message: Antl.formatMessage('messages.badRequest') }) }
   }
 
   async sendRestorePasswordEmail ({ request, response }) {
@@ -73,9 +67,7 @@ class AuthController {
       Event.fire('restore::password', { user, url })
 
       response.json({ message: Antl.formatMessage('messages.checkEmail') })
-    } catch ({ message }) {
-      response.status(400).json({ message })
-    }
+    } catch (err) { response.status(400).json({ message: Antl.formatMessage('messages.badRequest') }) }
   }
 
   async saveNewPassword ({ request, response, auth }) {
@@ -87,16 +79,14 @@ class AuthController {
       const { token } = await auth.attempt(user.email, request.input('password'))
       response.header('Authorization', token)
       response.json({ message: Antl.formatMessage('messages.passwordChanged') })
-    } catch ({ message }) {
-      response.status(400).json({ message })
-    }
+    } catch ({ message }) { response.status(400).json({ message: Antl.formatMessage('messages.badRequest') }) }
   }
 
   async checkAuth ({ response, auth }) {
     try {
       await auth.check()
       response.json({ status: true })
-    } catch (error) {
+    } catch (err) {
       response.status(401).json({ status: false })
     }
   }

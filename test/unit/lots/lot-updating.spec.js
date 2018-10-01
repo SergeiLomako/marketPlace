@@ -47,7 +47,6 @@ test('Update lot (fail) (bad request)', async ({ assert, client }) => {
     .accept('json')
     .loginVia(user, 'jwt')
     .end()
-
   const failRules = [
     'title.min:10', 'currentPrice.above:0', 'estimatedPrice.number',
     `estimatedPrice.above:${price}`, `endTime.after:${now.toISOString()}`

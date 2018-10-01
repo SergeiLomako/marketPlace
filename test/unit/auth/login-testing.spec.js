@@ -18,21 +18,7 @@ test('check login (fail (bad credentials))', async ({ client }) => {
     .end()
 
   response.assertStatus(400)
-  response.assertError({ message: Antl.formatMessage('messages.badCredentials') })
-})
-
-test('check login (fail (not confirmed))', async ({ client }) => {
-  const user = await Factory.model('App/Models/User').create()
-  const response = await client.post(Route.url('login'))
-    .field({
-      email: user.email,
-      password: 'qwerty'
-    })
-    .accept('json')
-    .end()
-
-  response.assertStatus(403)
-  response.assertJSON({ message: Antl.formatMessage('messages.accountNotConfirmed') })
+  response.assertError({ message: Antl.formatMessage('messages.badRequest') })
 })
 
 test('check login (success)', async ({ client }) => {

@@ -27,8 +27,8 @@ function randomInt (min, max) {
 
 Factory.blueprint('App/Models/User', async (faker, i, data) => {
   return {
-    firstname: faker.first(),
-    lastname: faker.last(),
+    firstName: faker.first(),
+    lastName: faker.last(),
     restorePasswordToken: data.restoreToken || null,
     email: data.email || `${randomInt(100, 10000)}${faker.email({ domain: 'test.com' })}`,
     phone: faker.phone({ formatted: false }),

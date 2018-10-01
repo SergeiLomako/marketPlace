@@ -17,8 +17,8 @@ test('check sending restore password email (fail)', async ({ client }) => {
     })
     .end()
 
-  response.assertStatus(404)
-  response.assertJSON({ message: Antl.formatMessage('messages.userNotFound') })
+  response.assertStatus(400)
+  response.assertJSON({ message: Antl.formatMessage('messages.badRequest') })
 })
 
 test('check sending restore password email (success)', async ({ assert, client }) => {
