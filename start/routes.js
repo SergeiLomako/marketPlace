@@ -71,10 +71,12 @@ Route
 
     Route.post('/:id/order', 'OrderController.store')
       .middleware(['checkWinner'])
+      .validator('createOrder')
       .as('createOrder')
 
     Route.put('/:id/order', 'OrderController.update')
-      .middleware(['checkWinner', 'checkOrderStatus'])
+      .middleware(['beforeOrderUpdate'])
+      .validator('updateOrder')
       .as('updateOrder')
   })
   .prefix('api/lots')

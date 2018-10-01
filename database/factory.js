@@ -41,7 +41,7 @@ Factory.blueprint('App/Models/User', async (faker, i, data) => {
 
 Factory.blueprint('App/Models/Lot', async (faker, i, data) => {
   return {
-    'user_id': data.userId || randomInt(1, 5),
+    'user_id': data.userId || 2,
     title: data.title || faker.paragraph({ sentences: 1 }),
     status: data.status || statuses[randomInt(0, 1)],
     currentPrice: data.currentPrice || faker.integer({ min: randomInt(10, 50), max: randomInt(50, 70) }),
@@ -53,8 +53,8 @@ Factory.blueprint('App/Models/Lot', async (faker, i, data) => {
 
 Factory.blueprint('App/Models/Bid', async (faker, i, data) => {
   return {
-    'user_id': data.userId || randomInt(1, 5),
-    'lot_id': data.lotId || randomInt(1, 5),
+    'user_id': data.userId || 3,
+    'lot_id': data.lotId || 1,
     proposedPrice: data.proposedPrice || randomInt(50, 80)
   }
 })

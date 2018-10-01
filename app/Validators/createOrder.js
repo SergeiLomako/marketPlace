@@ -21,10 +21,8 @@ class createOrder {
       'United States Postal Service'
     ]
     return {
-      status: `required|in:${statuses}`,
       type: `required|in:${types}`,
-      arrivalLocation: 'required|max:100',
-      bidId: 'required'
+      arrivalLocation: 'required|max:100'
     }
   }
 

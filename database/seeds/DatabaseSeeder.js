@@ -25,6 +25,10 @@ class DatabaseSeeder {
     await Factory
       .model('App/Models/Bid')
       .createMany(10)
+
+    await Factory
+      .model('App/Models/Order')
+      .createMany(10)
   }
 }
 

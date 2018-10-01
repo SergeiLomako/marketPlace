@@ -11,7 +11,7 @@ const namedMiddleware = {
   checkAuthor: 'App/Middleware/CheckAuthor',
   checkAccess: 'App/Middleware/CheckAccess',
   checkWinner: 'App/Middleware/CheckWinner',
-  checkOrderStatus: 'App/Middleware/CheckOrderStatus'
+  beforeOrderUpdate: 'App/Middleware/BeforeOrderUpdate'
 }
 
 const serverMiddleware = [

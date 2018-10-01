@@ -1,16 +1,15 @@
 'use strict'
 
 const Antl = use('Antl')
-const Order = use('Order')
+const Order = use('App/Models/Order')
 
 class OrderController {
   async store ({ request, response }) {
     try {
-      const { status, bidId, type, arrivalLocation } = request.all()
+      const { type, arrivalLocation } = request.all()
       await Order.create({
-        'bid_id': bidId,
+        'bid_id': request.bidId,
         arrivalLocation,
-        status,
         type
       })
 
@@ -20,9 +19,9 @@ class OrderController {
     }
   }
 
-  async update ({ request, response, params }) {
+  async update ({ request, response }) {
     try {
-      const order = Order.findOrFail(params.id)
+      const order = await Order.findOrFail(request.orderId)
       const updateData = {
         status: request.input('status', order.status),
         type: request.input('type', order.type),

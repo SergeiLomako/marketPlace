@@ -98,7 +98,5 @@ test('Create lot (success)', async ({ assert, client }) => {
   const path = Helpers.publicPath(`${Env.get('IMAGE_FOLDER')}/${image}`)
   await unlink(path)
   response.assertStatus(201)
-  response.assertJSON({
-    message: Antl.formatMessage('messages.lotCreated')
-  })
+  response.assertJSON({ message: Antl.formatMessage('messages.lotCreated') })
 })

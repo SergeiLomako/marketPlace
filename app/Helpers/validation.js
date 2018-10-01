@@ -9,7 +9,9 @@ function generateMessage (field, rule) {
     validation: getSubstring(rule, null, ':'),
     message: Antl.formatMessage(`validation.${getSubstring(rule, null, ':')}`, {
       field: ucFirst(field),
-      value: getSubstring(rule, ':', ',')
+      value: getSubstring(rule, null, ':') === 'in'
+        ? getSubstring(rule, ':', null)
+        : getSubstring(rule, ':', ',')
     })
   }
 }
