@@ -1,8 +1,15 @@
 'use strict'
 
 const Kue = use('kue')
+const Env = use('Env')
 const Event = use('Event')
-const Queue = Kue.createQueue({ jobEvents: false })
+const Queue = Kue.createQueue({
+  redis: {
+    host: Env.get('REDIS_HOST', '127.0.0.1'),
+    port: Env.get('REDIS_PORT', 6379)
+  },
+  jobEvents: false
+})
 
 function addJobs (lot) {
   const inProcess = Queue.create('inProcess', { lotId: lot.id })
