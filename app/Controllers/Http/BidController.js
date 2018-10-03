@@ -2,7 +2,7 @@
 
 const Lot = use('App/Models/Lot')
 const Env = use('Env')
-const { removeJobs } = use('App/Helpers/jobs')
+const { removeJob } = use('App/Helpers/jobs')
 const Bid = use('App/Models/Bid')
 const beforeCreateBid = use('App/Helpers/bidCreating')
 const Event = use('Event')
@@ -47,7 +47,7 @@ class BidController {
       await lot.save()
 
       if (lot.currentPrice >= lot.estimatedPrice) {
-        removeJobs(lot)
+        removeJob(lot.closedJobId)
         Event.fire('closedLot', { lot })
       }
       response.json({ message: Antl.formatMessage('messages.bidCreated') })

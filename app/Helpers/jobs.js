@@ -31,29 +31,17 @@ function addJobs (lot) {
     })
 }
 
-function updateJobs (lot) {
-  Kue.Job.get(lot.inProcessJobId, (err, job) => {
+function updateJob (id, date) {
+  Kue.Job.get(id, (err, job) => {
     if (err) throw err
     job.set('created_at', new Date().getTime())
-    job.delay(new Date(lot.startTime))
-      .save(err => { if (err) throw err })
-  })
-
-  Kue.Job.get(lot.closedJobId, (err, job) => {
-    if (err) throw err
-    job.set('created_at', new Date().getTime())
-    job.delay(new Date(lot.endTime))
+    job.delay(new Date(date))
       .save(err => { if (err) throw err })
   })
 }
 
-function removeJobs (lot) {
-  Kue.Job.get(lot.inProcessJobId, (err, job) => {
-    if (err) throw err
-    job.remove(err => { if (err) throw err })
-  })
-
-  Kue.Job.get(lot.closedJobId, (err, job) => {
+function removeJob (id) {
+  Kue.Job.get(id, (err, job) => {
     if (err) throw err
     job.remove(err => { if (err) throw err })
   })
@@ -69,4 +57,4 @@ Queue.process('closed', function (job, done) {
   done()
 })
 
-module.exports = { addJobs, updateJobs, removeJobs }
+module.exports = { addJobs, updateJob, removeJob }

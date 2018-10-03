@@ -2,7 +2,7 @@
 
 const Model = use('Model')
 const Env = use('Env')
-const { addJobs, removeJobs } = use('App/Helpers/jobs')
+const { addJobs, removeJob } = use('App/Helpers/jobs')
 
 class Lot extends Model {
   static boot () {
@@ -13,7 +13,8 @@ class Lot extends Model {
     })
 
     this.addHook('beforeDelete', async (lot) => {
-      removeJobs(lot)
+      removeJob(lot.inProcessJobId)
+      removeJob(lot.closedJobId)
     })
   }
 
