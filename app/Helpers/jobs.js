@@ -32,40 +32,30 @@ function addJobs (lot) {
 }
 
 function updateJobs (lot) {
-  Queue.delayed((err, ids) => {
+  Kue.Job.get(lot.inProcessJobId, (err, job) => {
     if (err) throw err
-    ids.forEach(id => {
-      Kue.Job.get(id, (err, job) => {
-        if (err) throw err
-        if (id === lot.inProcessJobId) {
-          job.set('created_at', new Date().getTime())
-          job.delay(new Date(lot.startTime))
-            .save(err => { if (err) throw err })
-        }
-        if (id === lot.closedJobId) {
-          job.set('created_at', new Date().getTime())
-          job.delay(new Date(lot.endTime))
-            .save(err => { if (err) throw err })
-        }
-      })
-    })
+    job.set('created_at', new Date().getTime())
+    job.delay(new Date(lot.startTime))
+      .save(err => { if (err) throw err })
+  })
+
+  Kue.Job.get(lot.closedJobId, (err, job) => {
+    if (err) throw err
+    job.set('created_at', new Date().getTime())
+    job.delay(new Date(lot.endTime))
+      .save(err => { if (err) throw err })
   })
 }
 
 function removeJobs (lot) {
-  Queue.delayed((err, ids) => {
+  Kue.Job.get(lot.inProcessJobId, (err, job) => {
     if (err) throw err
-    ids.forEach(id => {
-      Kue.Job.get(id, (err, job) => {
-        if (err) throw err
-        if (id === lot.inProcessJobId) {
-          job.remove(err => { if (err) throw err })
-        }
-        if (id === lot.closedJobId) {
-          job.remove(err => { if (err) throw err })
-        }
-      })
-    })
+    job.remove(err => { if (err) throw err })
+  })
+
+  Kue.Job.get(lot.closedJobId, (err, job) => {
+    if (err) throw err
+    job.remove(err => { if (err) throw err })
   })
 }
 
