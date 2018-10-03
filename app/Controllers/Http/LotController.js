@@ -2,6 +2,7 @@
 
 const Lot = use('App/Models/Lot')
 const Env = use('Env')
+const addJobs = use('App/Helpers/jobs')
 const Antl = use('Antl')
 const Helpers = use('Helpers')
 const { upload, unlink } = use('App/Helpers/files')
@@ -28,7 +29,14 @@ class LotController {
         data.image = uploadResult
       }
       data['user_id'] = auth.user.id
-      await Lot.create(data)
+      const newLot = await Lot.create(data)
+      addJobs(newLot)
+      // console.log(`inProcessJobId: ${inProcessJobId}`)
+      // console.log(`closedJobId: ${closedJobId}`)
+      // newLot.inProcessJobId = inProcessJobId
+      // newLot.closedJobId = closedJobId
+      // await newLot.save()
+
       response.status(201).json({ message: Antl.formatMessage('messages.lotCreated') })
     } catch ({ name, message }) {
       if (name === 'Error') {
