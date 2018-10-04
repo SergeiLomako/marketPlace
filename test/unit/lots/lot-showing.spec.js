@@ -5,6 +5,7 @@ const Factory = use('Factory')
 const Database = use('Database')
 const Route = use('Route')
 const Antl = use('Antl')
+const { removeJob } = use('App/Helpers/jobs')
 const Env = use('Env')
 const now = use('moment')()
 let user
@@ -31,7 +32,7 @@ test('Show lots (fail) (not auth)', async ({ assert, client }) => {
     .end()
 
   response.assertStatus(401)
-  response.assertJSON({
+  assert.include(response.body, {
     message: 'E_INVALID_JWT_TOKEN: jwt must be provided',
     name: 'InvalidJwtToken',
     code: 'E_INVALID_JWT_TOKEN',
@@ -44,6 +45,9 @@ test('Show single lot (fail) (auth user not author and status is not "inProcess"
     userId: user.id,
     status: 'pending'
   })
+
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
 
   const response = await client.get(Route.url('showLot', { id: lot.id }))
     .loginVia(user1, 'jwt')
@@ -68,6 +72,11 @@ test('Show single lot (success)', async ({ assert, client }) => {
   const response = await client.get(Route.url('showLot', { id: lot.id }))
     .loginVia(user, 'jwt')
     .end()
+
+  const { inProcessJobId, closedJobId } = await Database.table('lots').last()
+  await removeJob(inProcessJobId)
+  await removeJob(closedJobId)
+
   response.assertStatus(200)
   response.assertJSON({
     currentPrice: lot.currentPrice,
@@ -79,6 +88,8 @@ test('Show single lot (success)', async ({ assert, client }) => {
     startTime: startTime.format(format),
     status: 'pending',
     title: lot.title,
-    'user_id': user.id
+    'user_id': user.id,
+    inProcessJobId,
+    closedJobId
   })
 })

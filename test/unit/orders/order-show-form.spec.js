@@ -34,9 +34,8 @@ before(async () => {
 })
 
 after(async () => {
-  await Database.from('lots')
-    .where('id', lot.id)
-    .delete()
+  await lot.delete()
+  await lotNotClosed.delete()
 
   await Database.from('users')
     .whereIn('id', [user.id, user1.id])

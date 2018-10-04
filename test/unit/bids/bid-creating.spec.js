@@ -2,6 +2,7 @@
 const { test, trait, before, after } = use('Test/Suite')('Bid Creating')
 const Bid = use('App/Models/Bid')
 const Route = use('Route')
+const { removeJob } = use('App/Helpers/jobs')
 const Database = use('Database')
 const Factory = use('Factory')
 const Env = use('Env')
@@ -31,14 +32,13 @@ after(async () => {
     .where('id', lotInProcess.id)
     .delete()
 
-  await Database.from('users')
-    .whereIn('id', [user.id, user1.id])
-    .delete()
+  await lotInProcess.delete()
 })
 
 test('Create bid (fail) (bad request)', async ({ assert, client }) => {
   const lot = await Factory.model('App/Models/Lot').create({ userId: user.id })
-
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
   const response = await client.post(Route.url('createBid', { id: lot.id }))
     .accept('json')
     .loginVia(user1, 'jwt')
@@ -53,6 +53,9 @@ test('Create bid (fail) (lot is not status "inProcess")', async ({ assert, clien
     userId: user.id,
     status: 'closed'
   })
+
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
 
   const response = await client.post(Route.url('createBid', { id: lot.id }))
     .accept('json')

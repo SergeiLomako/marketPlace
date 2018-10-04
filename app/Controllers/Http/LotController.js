@@ -69,8 +69,8 @@ class LotController {
       currentLot.merge(data)
       await currentLot.save()
 
-      updateJob(currentLot.inProcessJobId, currentLot.startTime)
-      updateJob(currentLot.closedJobId, currentLot.endTime)
+      await updateJob(currentLot.inProcessJobId, currentLot.startTime)
+      await updateJob(currentLot.closedJobId, currentLot.endTime)
 
       response.json({ message: Antl.formatMessage('messages.lotUpdated') })
     } catch ({ message }) {

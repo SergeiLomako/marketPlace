@@ -15,8 +15,8 @@ class Lot extends Model {
     })
 
     this.addHook('beforeDelete', async (lot) => {
-      removeJob(lot.inProcessJobId)
-      removeJob(lot.closedJobId)
+      await removeJob(lot.inProcessJobId)
+      await removeJob(lot.closedJobId)
     })
   }
 

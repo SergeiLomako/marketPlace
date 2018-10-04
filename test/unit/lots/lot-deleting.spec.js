@@ -3,6 +3,7 @@
 const { test, trait, before, after } = use('Test/Suite')('Lot deleting')
 const Factory = use('Factory')
 const Route = use('Route')
+const { removeJob } = use('App/Helpers/jobs')
 const Antl = use('Antl')
 const now = use('moment')()
 const Helpers = use('Helpers')
@@ -31,7 +32,7 @@ test('Delete lot (fail) (not auth)', async ({ assert, client }) => {
     .end()
 
   response.assertStatus(401)
-  response.assertJSON({
+  assert.include(response.body, {
     message: 'E_INVALID_JWT_TOKEN: jwt must be provided',
     name: 'InvalidJwtToken',
     code: 'E_INVALID_JWT_TOKEN',
@@ -44,6 +45,9 @@ test('Delete lot (fail) (not author)', async ({ assert, client }) => {
     userId: user.id,
     status: 'pending'
   })
+
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
 
   const response = await client.delete(Route.url('deleteLot', { id: lot.id }))
     .loginVia(user1, 'jwt')
@@ -59,6 +63,8 @@ test('Delete lot (fail) (status not "pending")', async ({ assert, client }) => {
     userId: user.id,
     status: 'inProcess'
   })
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
 
   const response = await client.delete(Route.url('deleteLot', { id: lot.id }))
     .loginVia(user, 'jwt')
@@ -75,8 +81,8 @@ test('Delete lot (success)', async ({ assert, client }) => {
       title: 'Testing title',
       currentPrice: 100,
       estimatedPrice: 200,
-      startTime: now.toISOString(),
-      endTime: now.add(1, 'days').toISOString()
+      startTime: now.add(1, 'days').toISOString(),
+      endTime: now.add(2, 'days').toISOString()
     })
     .attach('image', Helpers.appRoot('test/files/nature.jpg'))
     .loginVia(user, 'jwt')
@@ -86,6 +92,7 @@ test('Delete lot (success)', async ({ assert, client }) => {
   const response = await client.delete(Route.url('deleteLot', { id }))
     .loginVia(user, 'jwt')
     .end()
+
   response.assertStatus(200)
   response.assertJSON({
     message: Antl.formatMessage('messages.lotDeleted')

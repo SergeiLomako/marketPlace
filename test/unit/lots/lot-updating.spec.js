@@ -6,6 +6,7 @@ const Antl = use('Antl')
 const Database = use('Database')
 const Factory = use('Factory')
 const Route = use('Route')
+const { removeJob } = use('App/Helpers/jobs')
 const Env = use('Env')
 const Lot = use('App/Models/Lot')
 const { generateErrors } = use('App/Helpers/validation')
@@ -13,6 +14,7 @@ const Helpers = use('Helpers')
 const { unlink } = use('App/Helpers/files')
 let user
 let user1
+let lot
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
@@ -21,20 +23,21 @@ trait('Auth/Client')
 before(async () => {
   user = await Factory.model('App/Models/User').create()
   user1 = await Factory.model('App/Models/User').create()
+  lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'pending'
+  })
 })
 
 after(async () => {
+  await lot.delete()
+
   await Database.from('users')
     .whereIn('id', [user.id, user1.id])
     .delete()
 })
 
 test('Update lot (fail) (bad request)', async ({ assert, client }) => {
-  const lot = await Factory.model('App/Models/Lot').create({
-    userId: user.id,
-    status: 'pending'
-  })
-
   const price = -12
   const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
@@ -62,7 +65,7 @@ test('Update lot (fail) (not auth)', async ({ assert, client }) => {
     .end()
 
   response.assertStatus(401)
-  response.assertJSON({
+  assert.include(response.body, {
     message: 'E_INVALID_JWT_TOKEN: jwt must be provided',
     name: 'InvalidJwtToken',
     code: 'E_INVALID_JWT_TOKEN',
@@ -71,11 +74,6 @@ test('Update lot (fail) (not auth)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
-  const lot = await Factory.model('App/Models/Lot').create({
-    userId: user.id,
-    status: 'pending'
-  })
-
   const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
       title: 'Testing title',
@@ -92,11 +90,6 @@ test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (not author)', async ({ assert, client }) => {
-  const lot = await Factory.model('App/Models/Lot').create({
-    userId: user.id,
-    status: 'pending'
-  })
-
   const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .loginVia(user1, 'jwt')
     .end()
@@ -107,11 +100,13 @@ test('Update lot (fail) (not author)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
-
   const lot = await Factory.model('App/Models/Lot').create({
     userId: user.id,
     status: 'inProcess'
   })
+
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
 
   const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .loginVia(user, 'jwt')
@@ -121,11 +116,6 @@ test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
 })
 
 test('Update lot (success)', async ({ assert, client }) => {
-  const lot = await Factory.model('App/Models/Lot').create({
-    userId: user.id,
-    status: 'pending'
-  })
-
   const response = await client.put(Route.url('updateLot', { id: lot.id }))
     .field({
       title: 'Testing title',

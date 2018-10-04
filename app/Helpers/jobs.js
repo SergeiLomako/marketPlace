@@ -16,7 +16,7 @@ function addJob (title, data, time) {
     const Job = Queue.create(title, data)
       .delay(new Date(time))
       .removeOnComplete(true)
-      .save(async err => {
+      .save(err => {
         if (err) reject(err)
         resolve(Job.id)
       })
@@ -39,12 +39,12 @@ function removeJob (id) {
   })
 }
 
-Queue.process('inProcess', function (job, done) {
+Queue.process('inProcess', (job, done) => {
   Event.fire('inProcessLot', { id: job.data.lotId })
   done()
 })
 
-Queue.process('closed', function (job, done) {
+Queue.process('closed', (job, done) => {
   Event.fire('closedLot', { id: job.data.lotId })
   done()
 })

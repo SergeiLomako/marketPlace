@@ -29,9 +29,7 @@ after(async () => {
     .where('id', bid.id)
     .delete()
 
-  await Database.from('lots')
-    .where('id', lot.id)
-    .delete()
+  await lot.delete()
 
   await Database.from('users')
     .whereIn('id', [user.id, user1.id])

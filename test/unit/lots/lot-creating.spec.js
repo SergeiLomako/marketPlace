@@ -2,6 +2,7 @@
 
 const { test, trait, before, after } = use('Test/Suite')('Lot creating')
 const Env = use('Env')
+const { removeJob } = use('App/Helpers/jobs')
 const Factory = use('Factory')
 const now = use('moment')()
 const Route = use('Route')
@@ -55,7 +56,7 @@ test('Create lot (fail) (not auth)', async ({ assert, client }) => {
     .end()
 
   response.assertStatus(401)
-  response.assertJSON({
+  assert.include(response.body, {
     message: 'E_INVALID_JWT_TOKEN: jwt must be provided',
     name: 'InvalidJwtToken',
     code: 'E_INVALID_JWT_TOKEN',
@@ -94,7 +95,9 @@ test('Create lot (success)', async ({ assert, client }) => {
     .loginVia(user, 'jwt')
     .end()
 
-  const { image } = await Database.table('lots').last()
+  const { image, inProcessJobId, closedJobId } = await Database.table('lots').last()
+  await removeJob(inProcessJobId)
+  await removeJob(closedJobId)
   const path = Helpers.publicPath(`${Env.get('IMAGE_FOLDER')}/${image}`)
   await unlink(path)
   response.assertStatus(201)
