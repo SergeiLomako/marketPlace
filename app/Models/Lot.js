@@ -8,9 +8,10 @@ class Lot extends Model {
   static boot () {
     super.boot()
 
-    this.addHook('beforeCreate', async (lot) => {
-      lot.inProcessJobId = await addJob('inProcess', null, lot.startTime)
-      lot.closedJobId = await addJob('closed', null, lot.endTime)
+    this.addHook('afterCreate', async (lot) => {
+      lot.inProcessJobId = await addJob('inProcess', { lotId: lot.id }, lot.startTime)
+      lot.closedJobId = await addJob('closed', { lotId: lot.id }, lot.endTime)
+      await lot.save()
     })
 
     this.addHook('beforeDelete', async (lot) => {
