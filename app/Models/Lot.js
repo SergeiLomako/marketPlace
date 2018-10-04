@@ -2,14 +2,16 @@
 
 const Model = use('Model')
 const Env = use('Env')
-const { addJobs, removeJob } = use('App/Helpers/jobs')
+const { addJob, removeJob } = use('App/Helpers/jobs')
 
 class Lot extends Model {
   static boot () {
     super.boot()
 
     this.addHook('afterCreate', async (lot) => {
-      addJobs(lot)
+      lot.inProcessJobId = await addJob('inProcess', { lotId: lot.id }, lot.startTime)
+      lot.closedJobId = await addJob('closed', { lotId: lot.id }, lot.endTime)
+      await lot.save()
     })
 
     this.addHook('beforeDelete', async (lot) => {

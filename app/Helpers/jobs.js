@@ -11,24 +11,16 @@ const Queue = Kue.createQueue({
   jobEvents: false
 })
 
-function addJobs (lot) {
-  const inProcess = Queue.create('inProcess', { lotId: lot.id })
-    .delay(new Date(lot.startTime))
-    .removeOnComplete(true)
-    .save(async err => {
-      if (err) throw err
-      lot.inProcessJobId = inProcess.id
-      await lot.save()
-    })
-
-  const closed = Queue.create('closed', { lotId: lot.id })
-    .delay(new Date(lot.endTime))
-    .removeOnComplete(true)
-    .save(async err => {
-      if (err) throw err
-      lot.closedJobId = closed.id
-      await lot.save()
-    })
+function addJob (title, data, time) {
+  return new Promise((resolve, reject) => {
+    const Job = Queue.create(title, data)
+      .delay(new Date(time))
+      .removeOnComplete(true)
+      .save(async err => {
+        if (err) reject(err)
+        resolve(Job.id)
+      })
+  })
 }
 
 function updateJob (id, date) {
@@ -57,4 +49,4 @@ Queue.process('closed', function (job, done) {
   done()
 })
 
-module.exports = { addJobs, updateJob, removeJob }
+module.exports = { addJob, updateJob, removeJob }
