@@ -26,7 +26,7 @@ class CreateLot {
       image: 'string|max:200',
       currentPrice: 'required|number|above:0',
       estimatedPrice: `required|number|above:${request.currentPrice}`,
-      startTime: `required|date|after:${moment().format('YYYY-MM-DD HH:mm:ss')}`,
+      startTime: `required|date|after:${moment().toISOString()}`,
       endTime: `required|date|after:${request.startTime}`
     }
   }

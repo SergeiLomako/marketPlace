@@ -1,22 +1,38 @@
 'use strict'
 
-const { test, trait } = use('Test/Suite')('Lot showing')
-const User = use('App/Models/User')
-const Lot = use('App/Models/Lot')
+const { test, trait, before, after } = use('Test/Suite')('Lot showing')
+const Factory = use('Factory')
+const Database = use('Database')
+const Route = use('Route')
 const Antl = use('Antl')
-const moment = use('moment')
+const { removeJob } = use('App/Helpers/jobs')
+const Env = use('Env')
+const now = use('moment')()
+let user
+let user1
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 trait('Auth/Client')
 
+before(async () => {
+  user = await Factory.model('App/Models/User').create()
+  user1 = await Factory.model('App/Models/User').create()
+})
+
+after(async () => {
+  await Database.from('users')
+    .whereIn('id', [user.id, user1.id])
+    .delete()
+})
+
 test('Show lots (fail) (not auth)', async ({ assert, client }) => {
-  const response = await client.get('/lots')
+  const response = await client.get(Route.url('lots'))
     .accept('json')
     .end()
 
   response.assertStatus(401)
-  response.assertJSON({
+  assert.include(response.body, {
     message: 'E_INVALID_JWT_TOKEN: jwt must be provided',
     name: 'InvalidJwtToken',
     code: 'E_INVALID_JWT_TOKEN',
@@ -25,36 +41,16 @@ test('Show lots (fail) (not auth)', async ({ assert, client }) => {
 })
 
 test('Show single lot (fail) (auth user not author and status is not "inProcess")', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
+    status: 'pending'
   })
 
-  const testUser1 = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '77777777777',
-    dob: '1980-10-10',
-    email: 'tester1@tester.com',
-    password: 'qwerty'
-  })
+  await removeJob(lot.inProcessJobId)
+  await removeJob(lot.closedJobId)
 
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
-    status: 'pending',
-    estimatedPrice: 200,
-    startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    endTime: moment().add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
-  })
-
-  const response = await client.get(`/lots/${lot.id}`)
-    .loginVia(testUser1, 'jwt')
+  const response = await client.get(Route.url('showLot', { lotId: lot.id }))
+    .loginVia(user1, 'jwt')
     .end()
   response.assertStatus(403)
   response.assertJSON({
@@ -63,42 +59,37 @@ test('Show single lot (fail) (auth user not author and status is not "inProcess"
 })
 
 test('Show single lot (success)', async ({ assert, client }) => {
-  const testUser = await User.create({
-    firstname: 'testuser',
-    lastname: 'testuser',
-    phone: '7777777777',
-    dob: '1980-10-10',
-    email: 'tester@tester.com',
-    password: 'qwerty'
-  })
-
-  const startTime = moment()
-  const endTime = moment().add(1, 'days')
-
-  const lot = await Lot.create({
-    'user_id': testUser.id,
-    title: 'Testing title',
-    currentPrice: 100,
+  const format = Env.get('DATE_FORMAT')
+  const startTime = now
+  const endTime = now.add(1, 'days')
+  const lot = await Factory.model('App/Models/Lot').create({
+    userId: user.id,
     status: 'pending',
-    estimatedPrice: 200,
-    startTime: startTime.format('YYYY-MM-DD HH:mm:ss'),
-    endTime: endTime.format('YYYY-MM-DD HH:mm:ss')
+    startTime: startTime.toISOString(),
+    endTime: endTime.toISOString()
   })
 
-  const response = await client.get(`/lots/${lot.id}`)
-    .loginVia(testUser, 'jwt')
+  const response = await client.get(Route.url('showLot', { lotId: lot.id }))
+    .loginVia(user, 'jwt')
     .end()
+
+  const { inProcessJobId, closedJobId } = await Database.table('lots').last()
+  await removeJob(inProcessJobId)
+  await removeJob(closedJobId)
+
   response.assertStatus(200)
   response.assertJSON({
-    currentPrice: 100,
+    currentPrice: lot.currentPrice,
     description: null,
-    endTime: endTime.format('DD.MM.YYYY HH:mm'),
-    estimatedPrice: 200,
+    endTime: endTime.format(format),
+    estimatedPrice: lot.estimatedPrice,
     id: lot.id,
     image: null,
-    startTime: startTime.format('DD.MM.YYYY HH:mm'),
+    startTime: startTime.format(format),
     status: 'pending',
-    title: 'Testing title',
-    'user_id': testUser.id
+    title: lot.title,
+    'user_id': user.id,
+    inProcessJobId,
+    closedJobId
   })
 })

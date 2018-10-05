@@ -2,22 +2,20 @@
 
 const { createMessagesObj } = use('App/Helpers/validation')
 
-class loginUser {
+class createBid {
   get validateAll () {
     return true
   }
 
   get sanitizationRules () {
     return {
-      email: 'normalize_email|trim',
-      remember: 'to_int'
+      proposedPrice: 'to_int'
     }
   }
 
   get rules () {
     return {
-      email: 'required|email',
-      password: 'required'
+      proposedPrice: 'required|above:0'
     }
   }
 
@@ -26,4 +24,4 @@ class loginUser {
   }
 }
 
-module.exports = loginUser
+module.exports = createBid

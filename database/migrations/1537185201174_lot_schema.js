@@ -14,6 +14,8 @@ class LotSchema extends Schema {
       table.text('description')
       table.integer('currentPrice').notNullable()
       table.integer('estimatedPrice').notNullable()
+      table.integer('inProcessJobId').defaultTo(null)
+      table.integer('closedJobId').defaultTo(null)
       table.timestamp('startTime').notNullable()
       table.timestamp('endTime').notNullable()
       table.timestamps()

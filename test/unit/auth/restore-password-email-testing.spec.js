@@ -3,41 +3,33 @@
 const { test, trait } = use('Test/Suite')('Restore password email testing')
 const Event = use('Event')
 const Antl = use('Antl')
-const User = use('App/Models/User')
+const Factory = use('Factory')
+const Route = use('Route')
 
 trait('DatabaseTransactions')
 trait('Test/ApiClient')
 
 test('check sending restore password email (fail)', async ({ client }) => {
-  const response = await client.put('/sendRestorePassword')
+  const response = await client.put(Route.url('sendRestorePassword'))
     .accept('json')
     .field({
       email: 'wrong email'
     })
     .end()
 
-  response.assertStatus(404)
-  response.assertJSON({ message: Antl.formatMessage('messages.userNotFound') })
+  response.assertStatus(400)
+  response.assertJSON({ message: Antl.formatMessage('messages.badRequest') })
 })
 
 test('check sending restore password email (success)', async ({ assert, client }) => {
   Event.fake()
 
-  const email = 'testinguser@email.com'
-  await User.create({
-    email: email,
-    phone: '1234567890',
-    firstname: 'John',
-    lastname: 'Doe',
-    password: 'qwerty',
-    dob: '2018-10-21',
-    confirmationToken: 'confirmationToken'
-  })
+  const user = await Factory.model('App/Models/User').create()
 
-  const response = await client.put('/sendRestorePassword')
+  const response = await client.put(Route.url('sendRestorePassword'))
     .accept('json')
     .field({
-      email: email
+      email: user.email
     })
     .end()
 

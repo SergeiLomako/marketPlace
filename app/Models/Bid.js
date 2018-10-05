@@ -14,6 +14,12 @@ class Bid extends Model {
   order () {
     return this.hasOne('App/Models/Order')
   }
+
+  static getCurrentLotList (lotId, page, perPage) {
+    return this.query().where('lot_id', lotId)
+      .orderBy('created_at', 'desc')
+      .paginate(page, perPage)
+  }
 }
 
 module.exports = Bid

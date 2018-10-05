@@ -2,8 +2,24 @@
 
 const Model = use('Model')
 const Env = use('Env')
+const { addJob, removeJob } = use('App/Helpers/jobs')
 
 class Lot extends Model {
+  static boot () {
+    super.boot()
+
+    this.addHook('afterCreate', async (lot) => {
+      lot.inProcessJobId = await addJob('inProcess', { lotId: lot.id }, lot.startTime)
+      lot.closedJobId = await addJob('closed', { lotId: lot.id }, lot.endTime)
+      await lot.save()
+    })
+
+    this.addHook('beforeDelete', async (lot) => {
+      await removeJob(lot.inProcessJobId)
+      await removeJob(lot.closedJobId)
+    })
+  }
+
   static get dates () {
     return super.dates.concat(['startTime', 'endTime'])
   }
@@ -16,6 +32,7 @@ class Lot extends Model {
 
   bids () {
     return this.hasMany('App/Models/Bid')
+      .orderBy('created_at', 'desc')
   }
 
   user () {
@@ -45,15 +62,14 @@ class Lot extends Model {
       .paginate(page, Env.get('PAGINATE'))
   }
 
-  static getList (request, userId) {
-    const page = request.input('page', 1)
-    if (request.input('myLots', false) && request.input('filter', false)) {
-      return request.input('filter') === 'created'
+  static getList (page, myLots, filter, userId) {
+    if (myLots && filter) {
+      return filter === 'created'
         ? this.getUserOnlyCreatedLots(userId, page)
         : this.getUserOnlyBidsLots(userId, page)
     }
 
-    return request.input('myLots', false)
+    return myLots
       ? this.getUserLotsWithBids(userId, page)
       : this.getAll(page)
   }

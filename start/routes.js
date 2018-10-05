@@ -1,62 +1,102 @@
 'use strict'
 
-/*
-|--------------------------------------------------------------------------
-| Routes
-|--------------------------------------------------------------------------
-|
-| Http routes are entry points to your web application. You can create
-| routes for different URL's and bind Controller actions to them.
-|
-| A complete guide on routing is available here.
-| http://adonisjs.com/docs/4.0/routing
-|
-*/
-
 const Route = use('Route')
+const Antl = use('Antl')
 
 Route.get('/', () => {
   return { greeting: 'Hello world in JSON' }
 })
 
-Route.post('/register', 'AuthController.register')
+Route.post('api/register', 'AuthController.register')
   .validator('storeUser')
+  .as('register')
 
-Route.get('/register/confirm/:token', 'AuthController.confirmEmail').as('confirm')
+Route.get('api/register/confirm/:confirmationToken', 'AuthController.confirmEmail')
+  .as('confirm')
 
-Route.get('/checkAuth', 'AuthController.checkAuth')
+Route.get('api/checkAuth', 'AuthController.checkAuth')
+  .as('checkAuth')
 
-Route.post('/login', 'AuthController.login')
+Route.post('api/login', 'AuthController.login')
   .validator('loginUser')
+  .as('login')
 
-Route.post('/logout', 'AuthController.logout')
-  .middleware(['auth'])
+Route.put('api/sendRestorePassword', 'AuthController.sendRestorePasswordEmail')
+  .as('sendRestorePassword')
 
-Route.put('/sendRestorePassword', 'AuthController.sendRestorePasswordEmail')
+Route.get('api/restorePasswordForm/:restoreToken', 'AuthController.showRestorePasswordForm')
+  .as('restoreEmail')
 
-Route.get('/restorePasswordForm/:token', 'AuthController.showRestorePasswordForm').as('restoreEmail')
-
-Route.put('/saveNewPassword', 'AuthController.saveNewPassword')
+Route.put('api/saveNewPassword', 'AuthController.saveNewPassword')
   .validator('changePassword')
+  .as('saveNewPassword')
 
 Route
   .group(() => {
     Route.get('/', 'LotController.index')
+      .as('lots')
 
-    Route.get('/:id', 'LotController.show')
-      .middleware(['checkAccess'])
+    Route.get('/:lotId', 'LotController.show')
+      .middleware(['storeLotInRequest', 'checkLotAccess'])
+      .as('showLot')
 
     Route.post('/', 'LotController.store')
       .validator('createLot')
+      .as('createLot')
 
-    Route.put('/:id', 'LotController.update')
-      .middleware(['checkStatus', 'checkAuthor'])
+    Route.put('/:lotId', 'LotController.update')
+      .middleware(['storeLotInRequest', 'checkLotPendingStatus', 'checkLotAuthor'])
+      .validator('updateLot')
+      .as('updateLot')
 
-    Route.put('/:id/changePrice', 'LotController.changePrice')
-      .middleware(['changePrice'])
+    Route.delete('/:lotId', 'LotController.destroy')
+      .middleware(['storeLotInRequest', 'checkLotPendingStatus', 'checkLotAuthor'])
+      .as('deleteLot')
 
-    Route.delete('/:id', 'LotController.destroy')
-      .middleware(['checkStatus', 'checkAuthor'])
+    Route.post('/:lotId/bids', 'BidController.store')
+      .middleware(['storeLotInRequest', 'checkLotInProcessStatus'])
+      .validator('createBid')
+      .as('createBid')
+
+    Route.get('/:lotId/bids', 'BidController.index')
+      .as('bids')
+
+    Route.get('/:lotId/bids/:bidId', 'BidController.show')
+      .middleware(['storeLotInRequest', 'storeBidInRequest'])
+      .as('showBid')
+
+    Route.get('/:lotId/bids/:bidId/order', ({ response }) => {
+      return response.json({ message: Antl.formatMessage('messages.imagineForm') })
+    })
+      .middleware([
+        'storeLotInRequest',
+        'checkLotClosedStatus',
+        'storeBidInRequest',
+        'checkWinner'])
+      .as('createOrderForm')
+
+    Route.post('/:lotId/bids/:bidId/order', 'OrderController.store')
+      .validator('createOrder')
+      .middleware([
+        'storeLotInRequest',
+        'checkLotClosedStatus',
+        'storeBidInRequest',
+        'checkBidAuthor',
+        'checkWinner'
+      ])
+      .as('createOrder')
+
+    Route.put('/:lotId/bids/:bidId/order', 'OrderController.update')
+      .validator('updateOrder')
+      .middleware([
+        'storeLotInRequest',
+        'storeBidInRequest',
+        'checkBidAuthor',
+        'checkWinner',
+        'storeOrderInRequest',
+        'checkOrderPendingStatus'
+      ])
+      .as('updateOrder')
   })
-  .prefix('lots')
+  .prefix('api/lots')
   .middleware(['auth'])

@@ -2,22 +2,25 @@
 
 const { createMessagesObj } = use('App/Helpers/validation')
 
-class loginUser {
+class createOrder {
   get validateAll () {
     return true
   }
 
   get sanitizationRules () {
     return {
-      email: 'normalize_email|trim',
-      remember: 'to_int'
+      arrivalLocation: 'strip_tags|trim'
     }
   }
 
   get rules () {
+    const types = [
+      'pickup', 'Royal Mail', 'DHL Express',
+      'United States Postal Service'
+    ]
     return {
-      email: 'required|email',
-      password: 'required'
+      type: `required|in:${types}`,
+      arrivalLocation: 'required|max:100'
     }
   }
 
@@ -26,4 +29,4 @@ class loginUser {
   }
 }
 
-module.exports = loginUser
+module.exports = createOrder
