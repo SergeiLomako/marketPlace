@@ -62,15 +62,14 @@ class Lot extends Model {
       .paginate(page, Env.get('PAGINATE'))
   }
 
-  static getList (request, userId) {
-    const page = request.input('page', 1)
-    if (request.input('myLots', false) && request.input('filter', false)) {
-      return request.input('filter') === 'created'
+  static getList (page, myLots, filter, userId) {
+    if (myLots && filter) {
+      return filter === 'created'
         ? this.getUserOnlyCreatedLots(userId, page)
         : this.getUserOnlyBidsLots(userId, page)
     }
 
-    return request.input('myLots', false)
+    return myLots
       ? this.getUserLotsWithBids(userId, page)
       : this.getAll(page)
   }

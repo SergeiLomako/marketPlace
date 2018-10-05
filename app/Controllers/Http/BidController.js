@@ -10,10 +10,10 @@ const Antl = use('Antl')
 
 class BidController {
   async index ({ params, request, response, auth }) {
+    const userId = auth.user.id
     try {
-      const userId = auth.user.id
       const bids = await Bid.getCurrentLotList(
-        params.id,
+        params.lotId,
         request.input('page', 1),
         Env.get('BIDS_PAGINATE')
       )
@@ -24,15 +24,13 @@ class BidController {
       })
 
       response.json(bids)
-    } catch ({ message }) {
-      response.status(500).json({ message })
-    }
+    } catch ({ message }) { response.status(500).json({ message }) }
   }
 
-  async store ({ request, response, params, auth }) {
+  async store ({ request, response, auth }) {
+    const lot = request.lot
+    const proposedPrice = request.input('proposedPrice')
     try {
-      const lot = await Lot.findOrFail(params.id)
-      const proposedPrice = request.input('proposedPrice')
       const error = await beforeCreateBid(lot, auth.user.id, proposedPrice)
       if (error) {
         return response.status(400).json({ message: error })
@@ -47,13 +45,11 @@ class BidController {
       await lot.save()
 
       if (lot.currentPrice >= lot.estimatedPrice) {
-        removeJob(lot.closedJobId)
+        await removeJob(lot.closedJobId)
         Event.fire('closedLot', { lot })
       }
       response.json({ message: Antl.formatMessage('messages.bidCreated') })
-    } catch ({ message }) {
-      response.status(500).json({ message })
-    }
+    } catch ({ message }) { response.status(500).json({ message }) }
   }
 }
 

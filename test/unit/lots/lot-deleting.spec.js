@@ -27,7 +27,7 @@ after(async () => {
 })
 
 test('Delete lot (fail) (not auth)', async ({ assert, client }) => {
-  const response = await client.delete(Route.url('deleteLot', { id: 1 }))
+  const response = await client.delete(Route.url('deleteLot', { lotId: 1 }))
     .accept('json')
     .end()
 
@@ -49,7 +49,7 @@ test('Delete lot (fail) (not author)', async ({ assert, client }) => {
   await removeJob(lot.inProcessJobId)
   await removeJob(lot.closedJobId)
 
-  const response = await client.delete(Route.url('deleteLot', { id: lot.id }))
+  const response = await client.delete(Route.url('deleteLot', { lotId: lot.id }))
     .loginVia(user1, 'jwt')
     .end()
   response.assertStatus(403)
@@ -66,7 +66,7 @@ test('Delete lot (fail) (status not "pending")', async ({ assert, client }) => {
   await removeJob(lot.inProcessJobId)
   await removeJob(lot.closedJobId)
 
-  const response = await client.delete(Route.url('deleteLot', { id: lot.id }))
+  const response = await client.delete(Route.url('deleteLot', { lotId: lot.id }))
     .loginVia(user, 'jwt')
     .end()
   response.assertStatus(403)
@@ -89,7 +89,7 @@ test('Delete lot (success)', async ({ assert, client }) => {
     .end()
 
   const { id } = await Database.table('lots').last()
-  const response = await client.delete(Route.url('deleteLot', { id }))
+  const response = await client.delete(Route.url('deleteLot', { lotId: id }))
     .loginVia(user, 'jwt')
     .end()
 

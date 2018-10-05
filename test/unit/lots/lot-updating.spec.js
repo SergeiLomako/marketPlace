@@ -39,7 +39,7 @@ after(async () => {
 
 test('Update lot (fail) (bad request)', async ({ assert, client }) => {
   const price = -12
-  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+  const response = await client.put(Route.url('updateLot', { lotId: lot.id }))
     .field({
       title: 'short',
       currentPrice: price,
@@ -60,7 +60,7 @@ test('Update lot (fail) (bad request)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (not auth)', async ({ assert, client }) => {
-  const response = await client.put(Route.url('updateLot', { id: 1 }))
+  const response = await client.put(Route.url('updateLot', { lotId: 1 }))
     .accept('json')
     .end()
 
@@ -74,7 +74,7 @@ test('Update lot (fail) (not auth)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
-  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+  const response = await client.put(Route.url('updateLot', { lotId: lot.id }))
     .field({
       title: 'Testing title',
       currentPrice: 100,
@@ -90,7 +90,7 @@ test('Update lot (fail) (incorrect image)', async ({ assert, client }) => {
 })
 
 test('Update lot (fail) (not author)', async ({ assert, client }) => {
-  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+  const response = await client.put(Route.url('updateLot', { lotId: lot.id }))
     .loginVia(user1, 'jwt')
     .end()
   response.assertStatus(403)
@@ -108,7 +108,7 @@ test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
   await removeJob(lot.inProcessJobId)
   await removeJob(lot.closedJobId)
 
-  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+  const response = await client.put(Route.url('updateLot', { lotId: lot.id }))
     .loginVia(user, 'jwt')
     .end()
   response.assertStatus(403)
@@ -116,7 +116,7 @@ test('Update lot (fail) (status not "pending")', async ({ assert, client }) => {
 })
 
 test('Update lot (success)', async ({ assert, client }) => {
-  const response = await client.put(Route.url('updateLot', { id: lot.id }))
+  const response = await client.put(Route.url('updateLot', { lotId: lot.id }))
     .field({
       title: 'Testing title',
       currentPrice: 100,

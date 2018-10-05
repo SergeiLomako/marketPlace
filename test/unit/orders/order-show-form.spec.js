@@ -38,12 +38,12 @@ after(async () => {
   await lotNotClosed.delete()
 
   await Database.from('users')
-    .whereIn('id', [user.id, user1.id])
+    .whereIn('id', [user.id, user1.id, user2.id])
     .delete()
 })
 
 test('Show form (fail) (not winner)', async ({ assert, client }) => {
-  await Factory.model('App/Models/Bid').create({
+  const bid = await Factory.model('App/Models/Bid').create({
     proposedPrice: 120,
     lotId: lot.id,
     userId: user1.id
@@ -55,7 +55,10 @@ test('Show form (fail) (not winner)', async ({ assert, client }) => {
     userId: user2.id
   })
 
-  const response = await client.get(Route.url('createOrderForm', { id: lot.id }))
+  const response = await client.get(Route.url('createOrderForm', {
+    lotId: lot.id,
+    bidId: bid.id
+  }))
     .loginVia(user1, 'jwt')
     .end()
 
@@ -70,17 +73,20 @@ test('Show form (fail) (not closed)', async ({ assert, client }) => {
     userId: user1.id
   })
 
-  await Factory.model('App/Models/Bid').create({
+  const bid = await Factory.model('App/Models/Bid').create({
     proposedPrice: 140,
     lotId: lotNotClosed.id,
     userId: user2.id
   })
 
-  const response = await client.get(Route.url('createOrderForm', { id: lot.id }))
+  const response = await client.get(Route.url('createOrderForm', {
+    lotId: lotNotClosed.id,
+    bidId: bid.id
+  }))
     .loginVia(user1, 'jwt')
     .end()
 
-  response.assertStatus(400)
+  response.assertStatus(403)
   response.assertJSON({ message: Antl.formatMessage('messages.lotNotClosed') })
 })
 
@@ -91,13 +97,16 @@ test('Show form (success)', async ({ assert, client }) => {
     userId: user1.id
   })
 
-  await Factory.model('App/Models/Bid').create({
+  const bid = await Factory.model('App/Models/Bid').create({
     proposedPrice: 140,
     lotId: lot.id,
     userId: user2.id
   })
 
-  const response = await client.get(Route.url('createOrderForm', { id: lot.id }))
+  const response = await client.get(Route.url('createOrderForm', {
+    lotId: lot.id,
+    bidId: bid.id
+  }))
     .loginVia(user2, 'jwt')
     .end()
 

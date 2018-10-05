@@ -1,26 +1,21 @@
 'use strict'
 
-const Database = use('Database')
 const Antl = use('Antl')
+const Database = use('Database')
 
 class CheckWinner {
-  async handle ({ request, response, params, auth }, next) {
-    const winner = await Database.select('bids.*')
-      .from('lots')
-      .innerJoin('bids', 'lots.id', 'bids.lot_id')
-      .where('lots.id', params.id)
-      .where('lots.status', 'closed')
-      .orderBy('bids.proposedPrice', 'desc')
-      .first()
-    if (!winner) {
-      return response.status(400).json({ message: Antl.formatMessage('messages.lotNotClosed') })
-    }
-
-    if (winner['user_id'] !== auth.user.id) {
-      return response.status(403).json({ message: Antl.formatMessage('messages.notWinner') })
-    }
-    request.bidId = winner.id
-    await next()
+  async handle ({ request, response }, next) {
+    try {
+      const maxBid = await Database.select('*')
+        .from('bids')
+        .where('lot_id', request.lot.id)
+        .orderBy('proposedPrice', 'desc')
+        .first()
+      if (maxBid && maxBid.proposedPrice !== request.bid.proposedPrice) {
+        return response.status(403).json({ message: Antl.formatMessage('messages.notWinner') })
+      }
+      await next()
+    } catch ({ message }) { response.status(500).json({ message }) }
   }
 }
 

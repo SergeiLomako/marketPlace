@@ -22,9 +22,7 @@ before(async () => {
 })
 
 after(async () => {
-  await Database.from('users')
-    .where('id', user.id)
-    .delete()
+  await user.delete()
 })
 
 test('Create lot (fail) (bad request)', async ({ assert, client }) => {

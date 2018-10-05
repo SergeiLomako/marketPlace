@@ -9,13 +9,11 @@ class createOrder {
 
   get sanitizationRules () {
     return {
-      arrivalLocation: 'strip_tags|trim',
-      bidId: 'to_int'
+      arrivalLocation: 'strip_tags|trim'
     }
   }
 
   get rules () {
-    const statuses = ['pending', 'sent', 'delivered']
     const types = [
       'pickup', 'Royal Mail', 'DHL Express',
       'United States Postal Service'

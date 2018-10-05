@@ -28,18 +28,21 @@ before(async () => {
 })
 
 after(async () => {
-  await Database.from('lots')
-    .where('id', lotInProcess.id)
-    .delete()
-
   await lotInProcess.delete()
+
+  await Database.from('users')
+    .whereIn('id', [user.id, user1.id])
+    .delete()
 })
 
 test('Create bid (fail) (bad request)', async ({ assert, client }) => {
-  const lot = await Factory.model('App/Models/Lot').create({ userId: user.id })
+  const lot = await Factory.model('App/Models/Lot').create({
+    status: 'inProcess',
+    userId: user.id
+  })
   await removeJob(lot.inProcessJobId)
   await removeJob(lot.closedJobId)
-  const response = await client.post(Route.url('createBid', { id: lot.id }))
+  const response = await client.post(Route.url('createBid', { lotId: lot.id }))
     .accept('json')
     .loginVia(user1, 'jwt')
     .end()
@@ -57,7 +60,7 @@ test('Create bid (fail) (lot is not status "inProcess")', async ({ assert, clien
   await removeJob(lot.inProcessJobId)
   await removeJob(lot.closedJobId)
 
-  const response = await client.post(Route.url('createBid', { id: lot.id }))
+  const response = await client.post(Route.url('createBid', { lotId: lot.id }))
     .accept('json')
     .field({
       proposedPrice: 170
@@ -65,7 +68,7 @@ test('Create bid (fail) (lot is not status "inProcess")', async ({ assert, clien
     .loginVia(user1, 'jwt')
     .end()
 
-  response.assertStatus(400)
+  response.assertStatus(403)
   response.assertJSON({ message: Antl.formatMessage('messages.notInProcess') })
 })
 
@@ -90,7 +93,7 @@ test('Create bid (fail) (user bid limit exceeded)', async ({ assert, client }) =
 
   await Bid.createMany(bids)
 
-  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
+  const response = await client.post(Route.url('createBid', { lotId: lotInProcess.id }))
     .field({
       proposedPrice: 150
     })
@@ -103,7 +106,7 @@ test('Create bid (fail) (user bid limit exceeded)', async ({ assert, client }) =
 })
 
 test('Create bid (fail) (bid price below current price)', async ({ assert, client }) => {
-  await client.post(Route.url('createBid', { id: lotInProcess.id }))
+  await client.post(Route.url('createBid', { lotId: lotInProcess.id }))
     .field({
       'lot_id': lotInProcess.id,
       proposedPrice: 150
@@ -112,7 +115,7 @@ test('Create bid (fail) (bid price below current price)', async ({ assert, clien
     .accept('json')
     .end()
 
-  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
+  const response = await client.post(Route.url('createBid', { lotId: lotInProcess.id }))
     .field({
       proposedPrice: 130
     })
@@ -125,7 +128,7 @@ test('Create bid (fail) (bid price below current price)', async ({ assert, clien
 })
 
 test('Create bid (fail) (make a bid on the lot of the current user)', async ({ assert, client }) => {
-  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
+  const response = await client.post(Route.url('createBid', { lotId: lotInProcess.id }))
     .field({
       'lot_id': lotInProcess.id,
       proposedPrice: 115
@@ -139,7 +142,7 @@ test('Create bid (fail) (make a bid on the lot of the current user)', async ({ a
 })
 
 test('Create bid (success)', async ({ assert, client }) => {
-  const response = await client.post(Route.url('createBid', { id: lotInProcess.id }))
+  const response = await client.post(Route.url('createBid', { lotId: lotInProcess.id }))
     .field({
       'lot_id': lotInProcess.id,
       proposedPrice: 115

@@ -7,11 +7,17 @@ const globalMiddleware = [
 
 const namedMiddleware = {
   auth: 'Adonis/Middleware/Auth',
-  checkStatus: 'App/Middleware/CheckStatus',
-  checkAuthor: 'App/Middleware/CheckAuthor',
-  checkAccess: 'App/Middleware/CheckAccess',
+  checkLotPendingStatus: 'App/Middleware/CheckLotPendingStatus',
+  checkLotInProcessStatus: 'App/Middleware/CheckLotInProcessStatus',
+  checkLotAuthor: 'App/Middleware/CheckLotAuthor',
+  checkLotAccess: 'App/Middleware/CheckLotAccess',
+  checkBidAuthor: 'App/Middleware/CheckBidAuthor',
+  storeBidInRequest: 'App/Middleware/StoreBidInRequest',
+  storeLotInRequest: 'App/Middleware/StoreLotInRequest',
   checkWinner: 'App/Middleware/CheckWinner',
-  beforeOrderUpdate: 'App/Middleware/BeforeOrderUpdate'
+  checkLotClosedStatus: 'App/Middleware/CheckLotClosedStatus',
+  checkOrderPendingStatus: 'App/Middleware/CheckOrderPendingStatus',
+  storeOrderInRequest: 'App/Middleware/StoreOrderInRequest'
 }
 
 const serverMiddleware = [

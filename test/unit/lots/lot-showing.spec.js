@@ -49,7 +49,7 @@ test('Show single lot (fail) (auth user not author and status is not "inProcess"
   await removeJob(lot.inProcessJobId)
   await removeJob(lot.closedJobId)
 
-  const response = await client.get(Route.url('showLot', { id: lot.id }))
+  const response = await client.get(Route.url('showLot', { lotId: lot.id }))
     .loginVia(user1, 'jwt')
     .end()
   response.assertStatus(403)
@@ -69,7 +69,7 @@ test('Show single lot (success)', async ({ assert, client }) => {
     endTime: endTime.toISOString()
   })
 
-  const response = await client.get(Route.url('showLot', { id: lot.id }))
+  const response = await client.get(Route.url('showLot', { lotId: lot.id }))
     .loginVia(user, 'jwt')
     .end()
 

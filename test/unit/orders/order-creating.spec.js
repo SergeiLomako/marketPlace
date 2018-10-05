@@ -27,7 +27,7 @@ before(async () => {
   })
 
   bid = await Factory.model('App/Models/Bid').create({
-    proposedPrice: 140,
+    proposedPrice: 130,
     lotId: lot.id,
     userId: user1.id
   })
@@ -56,9 +56,12 @@ test('Create order (fail) (bad request)', async ({ assert, client }) => {
     'pickup', 'Royal Mail', 'DHL Express',
     'United States Postal Service'
   ]
-  const response = await client.post(Route.url('createOrder', { id: lot.id }))
+  const response = await client.post(Route.url('createOrder', {
+    lotId: lot.id,
+    bidId: bid1.id
+  }))
     .field({
-      type: 'wrong',
+      type: 'wrong'
     })
     .loginVia(user1)
     .accept('json')
@@ -71,7 +74,10 @@ test('Create order (fail) (bad request)', async ({ assert, client }) => {
 })
 
 test('Create order (success)', async ({ assert, client }) => {
-  const response = await client.post(Route.url('createOrder', { id: lot.id }))
+  const response = await client.post(Route.url('createOrder', {
+    lotId: lot.id,
+    bidId: bid1.id
+  }))
     .field({
       type: 'pickup',
       arrivalLocation: 'arrival location address'

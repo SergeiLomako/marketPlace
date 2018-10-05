@@ -1,6 +1,6 @@
 'use strict'
 
-const { test, trait, before, after } = use('Test/Suite')('Create order')
+const { test, trait, before, after } = use('Test/Suite')('Update order')
 const Factory = use('Factory')
 const Route = use('Route')
 const Database = use('Database')
@@ -38,7 +38,10 @@ after(async () => {
 
 test('Update order (fail) (no author)', async ({ assert, client }) => {
   await Factory.model('App/Models/Order').create({ bidId: bid.id, status: 'pending' })
-  const response = await client.put(Route.url('updateOrder', { id: lot.id }))
+  const response = await client.put(Route.url('updateOrder', {
+    lotId: lot.id,
+    bidId: bid.id
+  }))
     .loginVia(user)
     .accept('json')
     .end()
@@ -49,7 +52,10 @@ test('Update order (fail) (no author)', async ({ assert, client }) => {
 
 test('Update order (fail) (no pending)', async ({ assert, client }) => {
   await Factory.model('App/Models/Order').create({ bidId: bid.id, status: 'sent' })
-  const response = await client.put(Route.url('updateOrder', { id: lot.id }))
+  const response = await client.put(Route.url('updateOrder', {
+    lotId: lot.id,
+    bidId: bid.id
+  }))
     .loginVia(user1)
     .accept('json')
     .end()
@@ -60,7 +66,10 @@ test('Update order (fail) (no pending)', async ({ assert, client }) => {
 
 test('Update order (success)', async ({ assert, client }) => {
   await Factory.model('App/Models/Order').create({ bidId: bid.id, status: 'pending' })
-  const response = await client.put(Route.url('updateOrder', { id: lot.id }))
+  const response = await client.put(Route.url('updateOrder', {
+    lotId: lot.id,
+    bidId: bid.id
+  }))
     .field({
       type: 'pickup',
       arrivalLocation: 'some arrival location'
